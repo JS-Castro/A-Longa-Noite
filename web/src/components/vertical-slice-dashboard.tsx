@@ -1,6 +1,7 @@
 "use client";
 
 import { BoardView } from "@/components/board-view";
+import { ItemCard } from "@/components/item-card";
 import { actionDefinitions } from "@/lib/game-data";
 import { useGameStore } from "@/stores/game-store";
 
@@ -24,6 +25,7 @@ export function VerticalSliceDashboard() {
     survivors,
     locations,
     objective,
+    itemDeck,
     events,
     log,
     selectedActionId,
@@ -269,6 +271,20 @@ export function VerticalSliceDashboard() {
         </div>
 
         <div className="grid gap-4">
+          <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(34,25,20,0.96),_rgba(16,14,13,0.96))] p-6 shadow-xl shadow-black/20">
+            <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+              Cartas
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-stone-50">
+              Recursos em mao
+            </h2>
+            <div className="mt-6 flex flex-wrap gap-4">
+              {itemDeck.slice(0, 3).map((item) => (
+                <ItemCard key={item.id} item={item} compact />
+              ))}
+            </div>
+          </section>
+
           <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(28,35,47,0.96),_rgba(13,17,24,0.96))] p-6 shadow-xl shadow-black/20">
             <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
               Evento ativo

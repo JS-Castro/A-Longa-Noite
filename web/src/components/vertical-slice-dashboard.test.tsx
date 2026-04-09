@@ -28,6 +28,9 @@ describe("VerticalSliceDashboard", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Serra e arredores" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Recursos em mao" }),
+    ).toBeInTheDocument();
   });
 
   it("resolves a turn when the action button is clicked", () => {

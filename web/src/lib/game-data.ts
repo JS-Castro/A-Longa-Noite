@@ -41,6 +41,17 @@ export type ObjectiveState = {
   alvo: number;
 };
 
+export type ItemCardData = {
+  id: string;
+  nome: string;
+  quantidade: number;
+  efeito: string;
+  origem: string;
+  categoria: "mantimentos" | "medico" | "municao" | "ferramenta";
+  flavor: string;
+  accent: string;
+};
+
 export type EventChoiceImpact = {
   moral?: number;
   mantimentos?: number;
@@ -83,6 +94,7 @@ export type GameState = {
   survivors: SurvivorSummary[];
   locations: LocationDefinition[];
   objective: ObjectiveState;
+  itemDeck: ItemCardData[];
   events: EventDefinition[];
   selectedActionId: string;
   selectedChoiceId: string | null;
@@ -176,6 +188,39 @@ export const mainObjective: ObjectiveState = {
   progresso: 1,
   alvo: 6,
 };
+
+export const itemDeck: ItemCardData[] = [
+  {
+    id: "item_mantimentos_enlatados",
+    nome: "Mantimentos Enlatados",
+    quantidade: 2,
+    efeito: "Adicionar 2 unidades de comida ao abrigo.",
+    origem: "Farmacia da Encosta",
+    categoria: "mantimentos",
+    flavor: "Ferrugem por fora, alivio por dentro.",
+    accent: "#b45309",
+  },
+  {
+    id: "item_kit_medico",
+    nome: "Kit Medico Improvisado",
+    quantidade: 1,
+    efeito: "Reduz o impacto de um ferimento ou crise medica.",
+    origem: "Enfermaria da colonia",
+    categoria: "medico",
+    flavor: "Nada disto inspira confianca. Tudo isto pode salvar uma vida.",
+    accent: "#0f766e",
+  },
+  {
+    id: "item_cartuchos",
+    nome: "Cartuchos Recuperados",
+    quantidade: 3,
+    efeito: "Permitem defesa armada em encontros de alto risco.",
+    origem: "Porta Norte",
+    categoria: "municao",
+    flavor: "Poucos, frios e demasiado valiosos para desperdiçar.",
+    accent: "#7f1d1d",
+  },
+];
 
 export const eventQueue: EventDefinition[] = [
   {
@@ -327,6 +372,7 @@ export const initialGameState: GameState = {
   survivors: activeSurvivors,
   locations,
   objective: mainObjective,
+  itemDeck,
   events: eventQueue,
   selectedActionId: actionDefinitions[0].id,
   selectedChoiceId: eventQueue[0]?.choices[0]?.id ?? null,

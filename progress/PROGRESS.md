@@ -33,6 +33,8 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - objetivo principal da sessao ligado ao progresso de turno
 - primeira vista de tabuleiro integrada na webapp
 - localizacoes, rotas e abrigo central agora visiveis como board
+- primeira linguagem visual de cartas integrada no prototipo
+- recursos apresentados como cartas de board game digital
 
 ## Em Curso
 
@@ -42,6 +44,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - introduzir locais exploraveis e objetivo principal real
 - aproximar dados de jogo de formatos estruturados reaproveitaveis
 - usar o board para selecao e interacao direta com localizacoes
+- ligar cartas a inventario e loot do turno
 
 ## Proximo
 
@@ -67,6 +70,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - o prototipo ja suporta escolhas de evento com impacto mecanico
 - o prototipo ja mostra progresso de sessao e estado do mapa
 - o prototipo ja tem uma representacao visual de tabuleiro
+- o prototipo ja mistura tabuleiro, dashboard e cartas
 
 ## Backlog Curto
 
@@ -92,3 +96,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - ligacao do evento ativo a escolhas e consequencias reais
 - integracao do objetivo principal e do mapa inicial na experiencia jogavel
 - criacao da primeira camada visual de board game digital
+- criacao das primeiras cartas visuais de recurso
