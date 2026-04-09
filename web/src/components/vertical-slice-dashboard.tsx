@@ -21,6 +21,8 @@ export function VerticalSliceDashboard() {
     turno,
     shelter,
     survivors,
+    locations,
+    objective,
     events,
     log,
     selectedActionId,
@@ -99,6 +101,38 @@ export function VerticalSliceDashboard() {
               >
                 {shelter.pressaoDaNoite}%
               </p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-[1.75rem] border border-emerald-300/15 bg-emerald-500/8 p-5">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
+                  Objetivo principal
+                </p>
+                <h2 className="mt-2 font-serif text-2xl text-stone-50">
+                  {objective.titulo}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-stone-300/80">
+                  {objective.descricao}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
+                  Progresso
+                </p>
+                <p className="mt-2 font-serif text-3xl text-emerald-100">
+                  {objective.progresso}/{objective.alvo}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 h-3 rounded-full bg-white/8">
+              <div
+                className="h-3 rounded-full bg-[linear-gradient(90deg,_#34d399,_#bef264)]"
+                style={{
+                  width: `${(objective.progresso / objective.alvo) * 100}%`,
+                }}
+              />
             </div>
           </div>
         </div>
@@ -219,6 +253,51 @@ export function VerticalSliceDashboard() {
         </div>
 
         <div className="grid gap-4">
+          <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(17,24,39,0.96),_rgba(9,12,18,0.96))] p-6 shadow-xl shadow-black/20">
+            <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+              Localizacoes
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-stone-50">
+              Mapa da serra
+            </h2>
+            <div className="mt-6 grid gap-3">
+              {locations.map((location) => (
+                <article
+                  key={location.id}
+                  className="rounded-[1.5rem] border border-white/8 bg-white/4 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-stone-500">
+                        {location.distancia}
+                      </p>
+                      <h3 className="mt-2 font-serif text-xl text-stone-50">
+                        {location.nome}
+                      </h3>
+                    </div>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.2em] ${
+                        location.estado === "seguro"
+                          ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                          : location.estado === "instavel"
+                            ? "border-amber-400/40 bg-amber-500/10 text-amber-100"
+                            : "border-rose-400/40 bg-rose-500/10 text-rose-100"
+                      }`}
+                    >
+                      {location.estado}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-xs uppercase tracking-[0.2em] text-stone-500">
+                    {location.tipo}
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-stone-300/80">
+                    Recompensa potencial: {location.recompensa}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(28,35,47,0.96),_rgba(13,17,24,0.96))] p-6 shadow-xl shadow-black/20">
             <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
               Evento ativo
@@ -322,7 +401,7 @@ export function VerticalSliceDashboard() {
               <li>Escolha de acao por turno</li>
               <li>Resolucao simples de recursos e pressao</li>
               <li>Evento ativo com escolhas reais</li>
-              <li>Historico curto do que aconteceu na colonia</li>
+              <li>Mapa e objetivo principal da sessao</li>
             </ul>
           </section>
         </div>

@@ -29,6 +29,8 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - pipeline GitHub Actions criada para lint, testes e build
 - evento ativo com escolhas reais ligado ao loop do turno
 - consequencias narrativas e mecanicas registadas no historico
+- mapa inicial com localizacoes integrado no dashboard
+- objetivo principal da sessao ligado ao progresso de turno
 
 ## Em Curso
 
@@ -36,6 +38,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - transformar markdown de conteudo em dados consumiveis pela app
 - definir a proxima camada do loop jogavel
 - introduzir locais exploraveis e objetivo principal real
+- aproximar dados de jogo de formatos estruturados reaproveitaveis
 
 ## Proximo
 
@@ -59,6 +62,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - o prototipo usa `Next.js`, `TypeScript`, `Tailwind` e `zustand`
 - a qualidade automatica minima inclui `lint`, `test` e `build` em CI
 - o prototipo ja suporta escolhas de evento com impacto mecanico
+- o prototipo ja mostra progresso de sessao e estado do mapa
 
 ## Backlog Curto
 
@@ -82,3 +86,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - implementacao da primeira camada jogavel de resolucao de turno
 - criacao de testes iniciais e pipeline de CI
 - ligacao do evento ativo a escolhas e consequencias reais
+- integracao do objetivo principal e do mapa inicial na experiencia jogavel

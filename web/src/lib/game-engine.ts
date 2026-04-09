@@ -5,6 +5,7 @@ import {
   type EventChoice,
   type EventDefinition,
   type GameState,
+  type LocationDefinition,
   type SurvivorSummary,
   type TurnLogEntry,
 } from "@/lib/game-data";
@@ -29,6 +30,21 @@ const updateSurvivorTension = (
     ...survivor,
     tensao: clamp(survivor.tensao + delta, 0, 100),
   }));
+
+const updateLocationState = (
+  locations: LocationDefinition[],
+  secureLocationId?: string,
+): LocationDefinition[] => {
+  if (!secureLocationId) {
+    return locations;
+  }
+
+  return locations.map((location) =>
+    location.id === secureLocationId
+      ? { ...location, estado: "seguro" }
+      : location,
+  );
+};
 
 const logEntry = (turno: number, titulo: string, detalhe: string): TurnLogEntry => ({
   id: `log_${turno}_${titulo.toLowerCase().replaceAll(" ", "_")}`,
@@ -76,6 +92,15 @@ const applyChoiceImpact = (state: GameState, choice: EventChoice): GameState => 
     state.survivors,
     choice.impact.survivorTension ?? 0,
   ),
+  locations: updateLocationState(state.locations, choice.impact.secureLocationId),
+  objective: {
+    ...state.objective,
+    progresso: clamp(
+      state.objective.progresso + (choice.impact.objectiveProgress ?? 0),
+      0,
+      state.objective.alvo,
+    ),
+  },
 });
 
 export const resolveTurn = (
@@ -109,6 +134,18 @@ export const resolveTurn = (
           ),
         },
         survivors: updateSurvivorTension(stateAfterChoice.survivors, 5),
+        locations: updateLocationState(
+          stateAfterChoice.locations,
+          "loc_farmacia_encosta",
+        ),
+        objective: {
+          ...stateAfterChoice.objective,
+          progresso: clamp(
+            stateAfterChoice.objective.progresso + 1,
+            0,
+            stateAfterChoice.objective.alvo,
+          ),
+        },
         events: rotateEvents(state.events),
         log: [
           logEntry(
@@ -136,6 +173,15 @@ export const resolveTurn = (
           moral: clamp(stateAfterChoice.shelter.moral - 1, 0, 100),
         },
         survivors: updateSurvivorTension(stateAfterChoice.survivors, 2),
+        locations: updateLocationState(stateAfterChoice.locations, "loc_porta_norte"),
+        objective: {
+          ...stateAfterChoice.objective,
+          progresso: clamp(
+            stateAfterChoice.objective.progresso + 1,
+            0,
+            stateAfterChoice.objective.alvo,
+          ),
+        },
         events: rotateEvents(state.events),
         log: [
           logEntry(
@@ -163,6 +209,14 @@ export const resolveTurn = (
           ),
         },
         survivors: updateSurvivorTension(stateAfterChoice.survivors, -3),
+        objective: {
+          ...stateAfterChoice.objective,
+          progresso: clamp(
+            stateAfterChoice.objective.progresso + 1,
+            0,
+            stateAfterChoice.objective.alvo,
+          ),
+        },
         events: rotateEvents(state.events),
         log: [
           logEntry(
@@ -193,6 +247,18 @@ export const resolveTurn = (
               : stateAfterChoice.shelter.ameacaExterior,
         },
         survivors: updateSurvivorTension(stateAfterChoice.survivors, 7),
+        locations: updateLocationState(
+          stateAfterChoice.locations,
+          "loc_torre_observacao",
+        ),
+        objective: {
+          ...stateAfterChoice.objective,
+          progresso: clamp(
+            stateAfterChoice.objective.progresso + 1,
+            0,
+            stateAfterChoice.objective.alvo,
+          ),
+        },
         events: rotateEvents(state.events),
         log: [
           logEntry(

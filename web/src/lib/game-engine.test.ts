@@ -10,6 +10,8 @@ describe("game engine", () => {
     expect(next.shelter.mantimentos).toBe(state.shelter.mantimentos + 1);
     expect(next.shelter.combustivel).toBe(state.shelter.combustivel - 1);
     expect(next.shelter.pressaoDaNoite).toBe(state.shelter.pressaoDaNoite - 2);
+    expect(next.objective.progresso).toBe(3);
+    expect(next.locations.find((location) => location.id === "loc_farmacia_encosta")?.estado).toBe("seguro");
     expect(next.log[0]?.titulo).toBe("Gerador estabilizado");
   });
 
@@ -21,6 +23,7 @@ describe("game engine", () => {
     expect(next.shelter.mantimentos).toBe(state.shelter.mantimentos - 1);
     expect(next.shelter.moral).toBe(state.shelter.moral + 4);
     expect(next.shelter.pressaoDaNoite).toBe(state.shelter.pressaoDaNoite + 3);
+    expect(next.objective.progresso).toBe(2);
     expect(next.survivors[0]?.tensao).toBeGreaterThan(state.survivors[0]?.tensao ?? 0);
   });
 });

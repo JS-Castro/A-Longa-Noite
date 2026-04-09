@@ -19,6 +19,12 @@ describe("VerticalSliceDashboard", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "O Fio no Gerador" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Segurar a Estacao Ate ao Amanhecer de Emergencia",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("resolves a turn when the action button is clicked", () => {
@@ -30,5 +36,8 @@ describe("VerticalSliceDashboard", () => {
 
     expect(screen.getAllByText("Turno 2")).toHaveLength(2);
     expect(screen.getByText("Remendo inseguro")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === "2/6"),
+    ).toBeInTheDocument();
   });
 });

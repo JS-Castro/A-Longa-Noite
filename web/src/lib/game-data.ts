@@ -25,6 +25,22 @@ export type ActionDefinition = {
   resumo: string;
 };
 
+export type LocationDefinition = {
+  id: string;
+  nome: string;
+  tipo: "saque" | "abrigo" | "risco" | "facção";
+  estado: "seguro" | "instavel" | "hostil";
+  distancia: string;
+  recompensa: string;
+};
+
+export type ObjectiveState = {
+  titulo: string;
+  descricao: string;
+  progresso: number;
+  alvo: number;
+};
+
 export type EventChoiceImpact = {
   moral?: number;
   mantimentos?: number;
@@ -32,6 +48,8 @@ export type EventChoiceImpact = {
   pressaoDaNoite?: number;
   survivorTension?: number;
   ameacaExterior?: string;
+  objectiveProgress?: number;
+  secureLocationId?: string;
 };
 
 export type EventChoice = {
@@ -63,6 +81,8 @@ export type GameState = {
   turno: number;
   shelter: ShelterState;
   survivors: SurvivorSummary[];
+  locations: LocationDefinition[];
+  objective: ObjectiveState;
   events: EventDefinition[];
   selectedActionId: string;
   selectedChoiceId: string | null;
@@ -114,6 +134,49 @@ export const activeSurvivors: SurvivorSummary[] = [
   },
 ];
 
+export const locations: LocationDefinition[] = [
+  {
+    id: "loc_farmacia_encosta",
+    nome: "Farmacia da Encosta",
+    tipo: "saque",
+    estado: "instavel",
+    distancia: "20 min",
+    recompensa: "medicamentos e material medico",
+  },
+  {
+    id: "loc_torre_observacao",
+    nome: "Torre de Observacao",
+    tipo: "risco",
+    estado: "instavel",
+    distancia: "5 min",
+    recompensa: "informacao sobre a serra",
+  },
+  {
+    id: "loc_capela_velha",
+    nome: "Capela da Estrada Velha",
+    tipo: "facção",
+    estado: "hostil",
+    distancia: "35 min",
+    recompensa: "contato, abrigo secundario ou conflito",
+  },
+  {
+    id: "loc_porta_norte",
+    nome: "Porta Norte",
+    tipo: "abrigo",
+    estado: "instavel",
+    distancia: "0 min",
+    recompensa: "tempo e defesa do abrigo",
+  },
+];
+
+export const mainObjective: ObjectiveState = {
+  titulo: "Segurar a Estacao Ate ao Amanhecer de Emergencia",
+  descricao:
+    "Estabilizar o abrigo, proteger acessos e reunir margem suficiente para aguentar a proxima vaga de frio.",
+  progresso: 1,
+  alvo: 6,
+};
+
 export const eventQueue: EventDefinition[] = [
   {
     id: "shelter_broken_wire",
@@ -135,6 +198,7 @@ export const eventQueue: EventDefinition[] = [
           moral: 2,
           pressaoDaNoite: -6,
           survivorTension: 2,
+          objectiveProgress: 1,
         },
       },
       {
@@ -173,6 +237,8 @@ export const eventQueue: EventDefinition[] = [
           pressaoDaNoite: -3,
           survivorTension: 6,
           ameacaExterior: "Ruido estranho detetado junto da torre",
+          secureLocationId: "loc_torre_observacao",
+          objectiveProgress: 1,
         },
       },
       {
@@ -186,6 +252,7 @@ export const eventQueue: EventDefinition[] = [
           moral: -1,
           pressaoDaNoite: -1,
           survivorTension: 2,
+          secureLocationId: "loc_torre_observacao",
         },
       },
     ],
@@ -209,6 +276,7 @@ export const eventQueue: EventDefinition[] = [
           moral: 1,
           pressaoDaNoite: -2,
           survivorTension: 1,
+          objectiveProgress: 1,
         },
       },
       {
@@ -223,6 +291,7 @@ export const eventQueue: EventDefinition[] = [
           moral: -1,
           pressaoDaNoite: 4,
           survivorTension: 5,
+          secureLocationId: "loc_capela_velha",
         },
       },
     ],
@@ -256,6 +325,8 @@ export const initialGameState: GameState = {
   turno: 1,
   shelter: shelterState,
   survivors: activeSurvivors,
+  locations,
+  objective: mainObjective,
   events: eventQueue,
   selectedActionId: actionDefinitions[0].id,
   selectedChoiceId: eventQueue[0]?.choices[0]?.id ?? null,
