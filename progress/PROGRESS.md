@@ -15,18 +15,32 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - documento de design inicial escrito
 - guia editorial pt-pt criado
 - registo de assets criado
+- identidade inicial do mundo definida
+- escopo do MVP fechado
+- templates base de conteudo criados
+- 6 personagens iniciais escritas
+- 6 eventos iniciais escritos
+- 4 itens iniciais definidos
+- base tecnica da webapp criada em `web/`
+- dashboard inicial do vertical slice implementado
+- store inicial com `zustand` configurada
+- primeira resolucao de turno implementada no prototipo
+- testes iniciais de logica e UI configurados e a passar
+- pipeline GitHub Actions criada para lint, testes e build
 
 ## Em Curso
 
-- definir identidade propria do universo
-- fechar o MVP do vertical slice
-- decidir stack tecnica inicial
+- expandir conteudo concreto do vertical slice
+- transformar markdown de conteudo em dados consumiveis pela app
+- definir a proxima camada do loop jogavel
 
 ## Proximo
 
-- criar templates de conteudo
 - definir papeis de agentes/developers
-- arrancar a estrutura tecnica da app web
+- ligar escolhas, consequencias e recursos a estado real
+- escrever mais eventos de abrigo e exploracao
+- introduzir locais exploraveis e mapa inicial
+- preparar dados estruturados em `json` ou `ts`
 
 ## Bloqueios
 
@@ -38,6 +52,9 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - o jogo procurara a sensacao de survival board game sem copiar IP existente
 - multiplayer entra depois do vertical slice offline
 - assets devem ter licenca clara e registada
+- a app web vive na pasta `web/`
+- o prototipo usa `Next.js`, `TypeScript`, `Tailwind` e `zustand`
+- a qualidade automatica minima inclui `lint`, `test` e `build` em CI
 
 ## Backlog Curto
 
@@ -53,3 +70,10 @@ Sprint atual: definicao do projeto e preparacao da base documental
 
 - arranque do repositorio
 - criacao da base documental
+- definicao inicial do mundo, da ameaca principal e do abrigo
+- criacao do documento de MVP
+- criacao de templates para personagens, eventos e itens
+- escrita das primeiras personagens, eventos e itens de referencia
+- criacao da webapp e do dashboard inicial do vertical slice
+- implementacao da primeira camada jogavel de resolucao de turno
+- criacao de testes iniciais e pipeline de CI

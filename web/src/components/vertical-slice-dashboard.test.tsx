@@ -1,0 +1,30 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { VerticalSliceDashboard } from "@/components/vertical-slice-dashboard";
+import { useGameStore } from "@/stores/game-store";
+
+describe("VerticalSliceDashboard", () => {
+  beforeEach(() => {
+    useGameStore.getState().resetGame();
+  });
+
+  it("renders the current shelter and turn information", () => {
+    render(<VerticalSliceDashboard />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "A Longa Noite" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Estacao Vaga-Lume")).toBeInTheDocument();
+    expect(screen.getAllByText("Turno 1")).toHaveLength(2);
+  });
+
+  it("resolves a turn when the action button is clicked", () => {
+    render(<VerticalSliceDashboard />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Distribuir racoes com transparencia/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Resolver turno/i }));
+
+    expect(screen.getAllByText("Turno 2")).toHaveLength(2);
+    expect(screen.getByText("Racoes distribuidas")).toBeInTheDocument();
+  });
+});
