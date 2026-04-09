@@ -40,6 +40,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - fases explicitas de turno introduzidas no prototipo
 - regras consultaveis a qualquer momento integradas na UI
 - interacoes do turno agora bloqueadas por fase
+- infraestrutura E2E com Playwright integrada na webapp
 
 ## Em Curso
 
@@ -52,6 +53,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - ligar cartas a inventario e loot do turno
 - usar drag and drop tambem para localizacoes e sobreviventes
 - aprofundar o comportamento das regras e consequencias por fase
+- expandir a cobertura E2E para drag and drop, board e fluxo de cartas
 
 ## Proximo
 
@@ -80,6 +82,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - o prototipo ja mistura tabuleiro, dashboard e cartas
 - o prototipo ja suporta interacao fisica basica com cartas
 - o prototipo ja tem ordem de turno explicita e regras acessiveis em UI
+- o projeto ja tem testes E2E para validar interacoes reais no browser
 
 ## Backlog Curto
 
@@ -108,3 +111,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - criacao das primeiras cartas visuais de recurso
 - introducao de drag and drop para cartas no single player
 - definicao da primeira camada de regras temporais e consulta de regras no jogo
+- integracao inicial de Playwright para testes end-to-end
