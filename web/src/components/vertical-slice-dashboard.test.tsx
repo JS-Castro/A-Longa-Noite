@@ -14,7 +14,7 @@ describe("VerticalSliceDashboard", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "A Longa Noite" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Estacao Vaga-Lume")).toBeInTheDocument();
+    expect(screen.getAllByText("Estacao Vaga-Lume")).toHaveLength(2);
     expect(screen.getAllByText("Turno 1")).toHaveLength(2);
     expect(
       screen.getByRole("heading", { level: 2, name: "O Fio no Gerador" }),
@@ -24,6 +24,9 @@ describe("VerticalSliceDashboard", () => {
         level: 2,
         name: "Segurar a Estacao Ate ao Amanhecer de Emergencia",
       }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Serra e arredores" }),
     ).toBeInTheDocument();
   });
 

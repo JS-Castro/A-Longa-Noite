@@ -31,6 +31,8 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - consequencias narrativas e mecanicas registadas no historico
 - mapa inicial com localizacoes integrado no dashboard
 - objetivo principal da sessao ligado ao progresso de turno
+- primeira vista de tabuleiro integrada na webapp
+- localizacoes, rotas e abrigo central agora visiveis como board
 
 ## Em Curso
 
@@ -39,6 +41,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - definir a proxima camada do loop jogavel
 - introduzir locais exploraveis e objetivo principal real
 - aproximar dados de jogo de formatos estruturados reaproveitaveis
+- usar o board para selecao e interacao direta com localizacoes
 
 ## Proximo
 
@@ -63,6 +66,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - a qualidade automatica minima inclui `lint`, `test` e `build` em CI
 - o prototipo ja suporta escolhas de evento com impacto mecanico
 - o prototipo ja mostra progresso de sessao e estado do mapa
+- o prototipo ja tem uma representacao visual de tabuleiro
 
 ## Backlog Curto
 
@@ -87,3 +91,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - criacao de testes iniciais e pipeline de CI
 - ligacao do evento ativo a escolhas e consequencias reais
 - integracao do objetivo principal e do mapa inicial na experiencia jogavel
+- criacao da primeira camada visual de board game digital
