@@ -16,15 +16,19 @@ describe("VerticalSliceDashboard", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Estacao Vaga-Lume")).toBeInTheDocument();
     expect(screen.getAllByText("Turno 1")).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { level: 2, name: "O Fio no Gerador" }),
+    ).toBeInTheDocument();
   });
 
   it("resolves a turn when the action button is clicked", () => {
     render(<VerticalSliceDashboard />);
 
     fireEvent.click(screen.getByRole("button", { name: /Distribuir racoes com transparencia/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Fazer remendo temporario/i }));
     fireEvent.click(screen.getByRole("button", { name: /Resolver turno/i }));
 
     expect(screen.getAllByText("Turno 2")).toHaveLength(2);
-    expect(screen.getByText("Racoes distribuidas")).toBeInTheDocument();
+    expect(screen.getByText("Remendo inseguro")).toBeInTheDocument();
   });
 });

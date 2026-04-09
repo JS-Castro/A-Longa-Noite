@@ -9,14 +9,6 @@ export type SurvivorSummary = {
   tensao: number;
 };
 
-export type EventSummary = {
-  id: string;
-  titulo: string;
-  local: string;
-  texto: string;
-  risco: RiskLevel;
-};
-
 export type ShelterState = {
   nome: string;
   temperatura: string;
@@ -33,6 +25,33 @@ export type ActionDefinition = {
   resumo: string;
 };
 
+export type EventChoiceImpact = {
+  moral?: number;
+  mantimentos?: number;
+  combustivel?: number;
+  pressaoDaNoite?: number;
+  survivorTension?: number;
+  ameacaExterior?: string;
+};
+
+export type EventChoice = {
+  id: string;
+  label: string;
+  detalhe: string;
+  consequenceTitle: string;
+  consequenceDetail: string;
+  impact: EventChoiceImpact;
+};
+
+export type EventDefinition = {
+  id: string;
+  titulo: string;
+  local: string;
+  texto: string;
+  risco: RiskLevel;
+  choices: EventChoice[];
+};
+
 export type TurnLogEntry = {
   id: string;
   turno: number;
@@ -44,8 +63,9 @@ export type GameState = {
   turno: number;
   shelter: ShelterState;
   survivors: SurvivorSummary[];
-  events: EventSummary[];
+  events: EventDefinition[];
   selectedActionId: string;
+  selectedChoiceId: string | null;
   log: TurnLogEntry[];
 };
 
@@ -94,7 +114,7 @@ export const activeSurvivors: SurvivorSummary[] = [
   },
 ];
 
-export const eventQueue: EventSummary[] = [
+export const eventQueue: EventDefinition[] = [
   {
     id: "shelter_broken_wire",
     titulo: "O Fio no Gerador",
@@ -102,6 +122,36 @@ export const eventQueue: EventSummary[] = [
     texto:
       "Um cabo queimado pode deitar abaixo o aquecimento durante a noite. Tomas quer agir ja. O abrigo nao tem margem para outro erro.",
     risco: "medio",
+    choices: [
+      {
+        id: "repair_now",
+        label: "Reparar ja",
+        detalhe: "Gasta combustivel e folego para estabilizar o aquecimento antes da noite cair.",
+        consequenceTitle: "Gerador estabilizado",
+        consequenceDetail:
+          "A equipa resolveu o problema antes do pior frio. O abrigo gastou recursos, mas a moral segurou-se.",
+        impact: {
+          combustivel: -1,
+          moral: 2,
+          pressaoDaNoite: -6,
+          survivorTension: 2,
+        },
+      },
+      {
+        id: "patch_temp",
+        label: "Fazer remendo temporario",
+        detalhe: "Poupa combustivel agora, mas arrisca deixar a colonia vulneravel durante a madrugada.",
+        consequenceTitle: "Remendo inseguro",
+        consequenceDetail:
+          "O sistema voltou a trabalhar, mas os estalidos no gerador fizeram crescer o medo de uma falha pior.",
+        impact: {
+          combustivel: 0,
+          moral: -1,
+          pressaoDaNoite: 5,
+          survivorTension: 4,
+        },
+      },
+    ],
   },
   {
     id: "shelter_steps_tower",
@@ -110,6 +160,35 @@ export const eventQueue: EventSummary[] = [
     texto:
       "Uma vigia ouviu passos num sitio fechado por dentro. Se for so medo, o rumor alastra. Se nao for, ha algo pior no abrigo.",
     risco: "medio-alto",
+    choices: [
+      {
+        id: "search_tower",
+        label: "Subir e investigar",
+        detalhe: "Uma ronda curta, nervosa e silenciosa tenta encontrar a origem do barulho.",
+        consequenceTitle: "Sinais na estrutura",
+        consequenceDetail:
+          "A torre nao revelou um intruso, mas ha marcas frescas na escada e o mistério pesa sobre todos.",
+        impact: {
+          moral: -2,
+          pressaoDaNoite: -3,
+          survivorTension: 6,
+          ameacaExterior: "Ruido estranho detetado junto da torre",
+        },
+      },
+      {
+        id: "seal_tower",
+        label: "Fechar a torre",
+        detalhe: "A prioridade passa a ser conter o rumor e impedir rondas isoladas até haver mais certezas.",
+        consequenceTitle: "Silencio imposto",
+        consequenceDetail:
+          "A torre foi selada. A colonia ganhou tempo, mas alguns sobreviventes sentem que algo importante ficou por descobrir.",
+        impact: {
+          moral: -1,
+          pressaoDaNoite: -1,
+          survivorTension: 2,
+        },
+      },
+    ],
   },
   {
     id: "explore_fire_chapel",
@@ -118,6 +197,35 @@ export const eventQueue: EventSummary[] = [
     texto:
       "Uma luz viva aparece num ponto que devia estar abandonado. Pode ser ajuda, armadilha ou oportunidade rara.",
     risco: "alto",
+    choices: [
+      {
+        id: "observe_first",
+        label: "Observar primeiro",
+        detalhe: "A equipa mantém distância e tenta perceber quem está no interior antes de agir.",
+        consequenceTitle: "Contacto evitado",
+        consequenceDetail:
+          "O abrigo não ganhou novos aliados, mas também evitou uma emboscada precipitada na neve.",
+        impact: {
+          moral: 1,
+          pressaoDaNoite: -2,
+          survivorTension: 1,
+        },
+      },
+      {
+        id: "enter_fast",
+        label: "Entrar de rompante",
+        detalhe: "Aposta-se na iniciativa e na força para reclamar o espaço antes que o perigo reaja.",
+        consequenceTitle: "Confronto na capela",
+        consequenceDetail:
+          "O grupo encontrou recursos, mas o barulho trouxe atenção indesejada e deixou a equipa mais tensa.",
+        impact: {
+          mantimentos: 1,
+          moral: -1,
+          pressaoDaNoite: 4,
+          survivorTension: 5,
+        },
+      },
+    ],
   },
 ];
 
@@ -150,6 +258,7 @@ export const initialGameState: GameState = {
   survivors: activeSurvivors,
   events: eventQueue,
   selectedActionId: actionDefinitions[0].id,
+  selectedChoiceId: eventQueue[0]?.choices[0]?.id ?? null,
   log: [
     {
       id: "log_1",

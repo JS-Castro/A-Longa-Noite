@@ -27,12 +27,15 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - primeira resolucao de turno implementada no prototipo
 - testes iniciais de logica e UI configurados e a passar
 - pipeline GitHub Actions criada para lint, testes e build
+- evento ativo com escolhas reais ligado ao loop do turno
+- consequencias narrativas e mecanicas registadas no historico
 
 ## Em Curso
 
 - expandir conteudo concreto do vertical slice
 - transformar markdown de conteudo em dados consumiveis pela app
 - definir a proxima camada do loop jogavel
+- introduzir locais exploraveis e objetivo principal real
 
 ## Proximo
 
@@ -55,6 +58,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - a app web vive na pasta `web/`
 - o prototipo usa `Next.js`, `TypeScript`, `Tailwind` e `zustand`
 - a qualidade automatica minima inclui `lint`, `test` e `build` em CI
+- o prototipo ja suporta escolhas de evento com impacto mecanico
 
 ## Backlog Curto
 
@@ -77,3 +81,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - criacao da webapp e do dashboard inicial do vertical slice
 - implementacao da primeira camada jogavel de resolucao de turno
 - criacao de testes iniciais e pipeline de CI
+- ligacao do evento ativo a escolhas e consequencias reais

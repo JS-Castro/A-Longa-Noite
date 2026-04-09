@@ -24,10 +24,13 @@ export function VerticalSliceDashboard() {
     events,
     log,
     selectedActionId,
+    selectedChoiceId,
     setSelectedAction,
+    setSelectedChoice,
     resolveSelectedAction,
     resetGame,
   } = useGameStore();
+  const activeEvent = events[0];
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -216,6 +219,44 @@ export function VerticalSliceDashboard() {
         </div>
 
         <div className="grid gap-4">
+          <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(28,35,47,0.96),_rgba(13,17,24,0.96))] p-6 shadow-xl shadow-black/20">
+            <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+              Evento ativo
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-stone-50">
+              {activeEvent.titulo}
+            </h2>
+            <p className="mt-2 text-xs uppercase tracking-[0.25em] text-stone-500">
+              {activeEvent.local}
+            </p>
+            <p className="mt-4 text-sm leading-7 text-stone-300/80">
+              {activeEvent.texto}
+            </p>
+            <div className="mt-5 space-y-3">
+              {activeEvent.choices.map((choice) => {
+                const isSelected = choice.id === selectedChoiceId;
+
+                return (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    onClick={() => setSelectedChoice(choice.id)}
+                    className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                      isSelected
+                        ? "border-sky-200/50 bg-sky-100/10 text-stone-50"
+                        : "border-white/10 bg-white/5 text-stone-200 hover:border-white/20 hover:bg-white/8"
+                    }`}
+                  >
+                    <span className="block text-sm font-medium">{choice.label}</span>
+                    <span className="mt-2 block text-xs leading-6 opacity-80">
+                      {choice.detalhe}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="rounded-[2rem] border border-white/10 bg-[#10151d] p-6 shadow-xl shadow-black/20">
             <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
               Feed narrativo
@@ -280,7 +321,7 @@ export function VerticalSliceDashboard() {
             <ul className="mt-5 space-y-3 text-sm leading-7 text-stone-200/80">
               <li>Escolha de acao por turno</li>
               <li>Resolucao simples de recursos e pressao</li>
-              <li>Rotacao de eventos para ritmo narrativo</li>
+              <li>Evento ativo com escolhas reais</li>
               <li>Historico curto do que aconteceu na colonia</li>
             </ul>
           </section>

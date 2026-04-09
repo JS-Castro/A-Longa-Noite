@@ -2,7 +2,8 @@ import {
   actionDefinitions,
   initialGameState,
   type ActionDefinition,
-  type EventSummary,
+  type EventChoice,
+  type EventDefinition,
   type GameState,
   type SurvivorSummary,
   type TurnLogEntry,
@@ -11,7 +12,7 @@ import {
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
-const rotateEvents = (events: EventSummary[]) => {
+const rotateEvents = (events: EventDefinition[]) => {
   if (events.length <= 1) {
     return events;
   }
@@ -39,101 +40,167 @@ const logEntry = (turno: number, titulo: string, detalhe: string): TurnLogEntry 
 const actionById = (actionId: string): ActionDefinition =>
   actionDefinitions.find((action) => action.id === actionId) ?? actionDefinitions[0];
 
+const choiceById = (
+  event: EventDefinition | undefined,
+  choiceId: string | null,
+): EventChoice | undefined =>
+  event?.choices.find((choice) => choice.id === choiceId) ?? event?.choices[0];
+
 export const createInitialGameState = (): GameState =>
   JSON.parse(JSON.stringify(initialGameState)) as GameState;
 
-export const resolveTurn = (state: GameState, actionId: string): GameState => {
+const applyChoiceImpact = (state: GameState, choice: EventChoice): GameState => ({
+  ...state,
+  shelter: {
+    ...state.shelter,
+    moral: clamp(state.shelter.moral + (choice.impact.moral ?? 0), 0, 100),
+    mantimentos: clamp(
+      state.shelter.mantimentos + (choice.impact.mantimentos ?? 0),
+      0,
+      12,
+    ),
+    combustivel: clamp(
+      state.shelter.combustivel + (choice.impact.combustivel ?? 0),
+      0,
+      12,
+    ),
+    pressaoDaNoite: clamp(
+      state.shelter.pressaoDaNoite + (choice.impact.pressaoDaNoite ?? 0),
+      0,
+      100,
+    ),
+    ameacaExterior:
+      choice.impact.ameacaExterior ?? state.shelter.ameacaExterior,
+  },
+  survivors: updateSurvivorTension(
+    state.survivors,
+    choice.impact.survivorTension ?? 0,
+  ),
+});
+
+export const resolveTurn = (
+  state: GameState,
+  actionId: string,
+  choiceId: string | null,
+): GameState => {
   const nextTurn = state.turno + 1;
   const action = actionById(actionId);
   const currentEvent = state.events[0];
+  const selectedChoice = choiceById(currentEvent, choiceId);
+
+  const stateAfterChoice =
+    selectedChoice !== undefined ? applyChoiceImpact(state, selectedChoice) : state;
 
   switch (action.id) {
     case "explore_pharmacy":
       return {
-        ...state,
+        ...stateAfterChoice,
         turno: nextTurn,
         selectedActionId: action.id,
+        selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
-          ...state.shelter,
-          mantimentos: clamp(state.shelter.mantimentos + 1, 0, 12),
-          moral: clamp(state.shelter.moral + 2, 0, 100),
-          pressaoDaNoite: clamp(state.shelter.pressaoDaNoite + 4, 0, 100),
+          ...stateAfterChoice.shelter,
+          mantimentos: clamp(stateAfterChoice.shelter.mantimentos + 1, 0, 12),
+          moral: clamp(stateAfterChoice.shelter.moral + 2, 0, 100),
+          pressaoDaNoite: clamp(
+            stateAfterChoice.shelter.pressaoDaNoite + 4,
+            0,
+            100,
+          ),
         },
-        survivors: updateSurvivorTension(state.survivors, 5),
+        survivors: updateSurvivorTension(stateAfterChoice.survivors, 5),
         events: rotateEvents(state.events),
         log: [
           logEntry(
             nextTurn,
-            "Saque sob neve",
-            `A equipa regressou da farmacia com material util, mas o frio agravou a pressao. Evento ativo: ${currentEvent.titulo}.`,
+            selectedChoice?.consequenceTitle ?? "Saque sob neve",
+            `${selectedChoice?.consequenceDetail ?? "A equipa regressou da farmacia com material util, mas o frio agravou a pressao."} Acao do turno: ${action.label}.`,
           ),
-          ...state.log,
+          ...stateAfterChoice.log,
         ],
       };
     case "fortify_gate":
       return {
-        ...state,
+        ...stateAfterChoice,
         turno: nextTurn,
         selectedActionId: action.id,
+        selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
-          ...state.shelter,
-          combustivel: clamp(state.shelter.combustivel - 1, 0, 12),
-          pressaoDaNoite: clamp(state.shelter.pressaoDaNoite - 8, 0, 100),
-          moral: clamp(state.shelter.moral - 1, 0, 100),
+          ...stateAfterChoice.shelter,
+          combustivel: clamp(stateAfterChoice.shelter.combustivel - 1, 0, 12),
+          pressaoDaNoite: clamp(
+            stateAfterChoice.shelter.pressaoDaNoite - 8,
+            0,
+            100,
+          ),
+          moral: clamp(stateAfterChoice.shelter.moral - 1, 0, 100),
         },
-        survivors: updateSurvivorTension(state.survivors, 2),
+        survivors: updateSurvivorTension(stateAfterChoice.survivors, 2),
         events: rotateEvents(state.events),
         log: [
           logEntry(
             nextTurn,
-            "Porta norte reforcada",
-            `A defesa aguentou mais uma noite, mas o abrigo gastou combustivel precioso. Evento ativo: ${currentEvent.titulo}.`,
+            selectedChoice?.consequenceTitle ?? "Porta norte reforcada",
+            `${selectedChoice?.consequenceDetail ?? "A defesa aguentou mais uma noite, mas o abrigo gastou combustivel precioso."} Acao do turno: ${action.label}.`,
           ),
-          ...state.log,
+          ...stateAfterChoice.log,
         ],
       };
     case "ration_transparency":
       return {
-        ...state,
+        ...stateAfterChoice,
         turno: nextTurn,
         selectedActionId: action.id,
+        selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
-          ...state.shelter,
-          mantimentos: clamp(state.shelter.mantimentos - 1, 0, 12),
-          moral: clamp(state.shelter.moral + 5, 0, 100),
-          pressaoDaNoite: clamp(state.shelter.pressaoDaNoite - 2, 0, 100),
+          ...stateAfterChoice.shelter,
+          mantimentos: clamp(stateAfterChoice.shelter.mantimentos - 1, 0, 12),
+          moral: clamp(stateAfterChoice.shelter.moral + 5, 0, 100),
+          pressaoDaNoite: clamp(
+            stateAfterChoice.shelter.pressaoDaNoite - 2,
+            0,
+            100,
+          ),
         },
-        survivors: updateSurvivorTension(state.survivors, -3),
+        survivors: updateSurvivorTension(stateAfterChoice.survivors, -3),
         events: rotateEvents(state.events),
         log: [
           logEntry(
             nextTurn,
-            "Racoes distribuidas",
-            `A verdade custou comida, mas reduziu o atrito no abrigo. Evento ativo: ${currentEvent.titulo}.`,
+            selectedChoice?.consequenceTitle ?? "Racoes distribuidas",
+            `${selectedChoice?.consequenceDetail ?? "A verdade custou comida, mas reduziu o atrito no abrigo."} Acao do turno: ${action.label}.`,
           ),
-          ...state.log,
+          ...stateAfterChoice.log,
         ],
       };
     case "investigate_tower":
       return {
-        ...state,
+        ...stateAfterChoice,
         turno: nextTurn,
         selectedActionId: action.id,
+        selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
-          ...state.shelter,
-          moral: clamp(state.shelter.moral - 3, 0, 100),
-          pressaoDaNoite: clamp(state.shelter.pressaoDaNoite - 5, 0, 100),
-          ameacaExterior: "Ruido estranho detetado junto da torre",
+          ...stateAfterChoice.shelter,
+          moral: clamp(stateAfterChoice.shelter.moral - 3, 0, 100),
+          pressaoDaNoite: clamp(
+            stateAfterChoice.shelter.pressaoDaNoite - 5,
+            0,
+            100,
+          ),
+          ameacaExterior:
+            stateAfterChoice.shelter.ameacaExterior === state.shelter.ameacaExterior
+              ? "Ruido estranho detetado junto da torre"
+              : stateAfterChoice.shelter.ameacaExterior,
         },
-        survivors: updateSurvivorTension(state.survivors, 7),
+        survivors: updateSurvivorTension(stateAfterChoice.survivors, 7),
         events: rotateEvents(state.events),
         log: [
           logEntry(
             nextTurn,
-            "Torre investigada",
-            `A ronda trouxe pistas sobre o Silencio Branco, mas deixou toda a colonia mais tensa. Evento ativo: ${currentEvent.titulo}.`,
+            selectedChoice?.consequenceTitle ?? "Torre investigada",
+            `${selectedChoice?.consequenceDetail ?? "A ronda trouxe pistas sobre o Silencio Branco, mas deixou toda a colonia mais tensa."} Acao do turno: ${action.label}.`,
           ),
-          ...state.log,
+          ...stateAfterChoice.log,
         ],
       };
     default:
