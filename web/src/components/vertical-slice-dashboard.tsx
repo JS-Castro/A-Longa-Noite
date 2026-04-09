@@ -32,7 +32,7 @@ function ShelterDropZone({
   return (
     <div
       ref={setNodeRef}
-      className={`mt-6 rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
+      className={`rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
         isOver
           ? "border-amber-300/70 bg-amber-200/12"
           : "border-white/15 bg-white/5"
@@ -247,7 +247,6 @@ export function VerticalSliceDashboard() {
             </button>
           </div>
 
-          <ShelterDropZone itemCount={shelterItems.length} />
         </aside>
       </section>
 
@@ -326,28 +325,51 @@ export function VerticalSliceDashboard() {
             <h2 className="mt-3 font-serif text-3xl text-stone-50">
               Recursos em mao
             </h2>
-            <div className="mt-6 flex flex-wrap gap-4">
-              {handItems.map((item) => (
-                <ItemCard key={item.id} item={item} compact draggable />
-              ))}
-            </div>
-            {handItems.length === 0 ? (
-              <p className="mt-4 text-sm leading-7 text-stone-400">
-                Todas as cartas desta mao foram colocadas no abrigo.
-              </p>
-            ) : null}
-            {shelterItems.length > 0 ? (
-              <>
-                <p className="mt-8 text-xs uppercase tracking-[0.35em] text-stone-400">
-                  Cartas no abrigo
+            <p className="mt-3 text-sm leading-7 text-stone-300/80">
+              Arrasta as cartas da mao para a area do abrigo logo ao lado.
+            </p>
+            <div className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
+                  Mao atual
                 </p>
                 <div className="mt-4 flex flex-wrap gap-4">
-                  {shelterItems.map((item) => (
-                    <ItemCard key={`shelter_${item.id}`} item={item} compact />
+                  {handItems.map((item) => (
+                    <ItemCard key={item.id} item={item} compact draggable />
                   ))}
                 </div>
-              </>
-            ) : null}
+                {handItems.length === 0 ? (
+                  <p className="mt-4 text-sm leading-7 text-stone-400">
+                    Todas as cartas desta mao foram colocadas no abrigo.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="rounded-[1.75rem] border border-white/8 bg-white/4 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
+                  Preparacao
+                </p>
+                <div className="mt-4">
+                  <ShelterDropZone itemCount={shelterItems.length} />
+                </div>
+                {shelterItems.length > 0 ? (
+                  <>
+                    <p className="mt-6 text-xs uppercase tracking-[0.28em] text-stone-500">
+                      Cartas largadas
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-4">
+                      {shelterItems.map((item) => (
+                        <ItemCard
+                          key={`shelter_${item.id}`}
+                          item={item}
+                          compact
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            </div>
           </section>
 
           <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(28,35,47,0.96),_rgba(13,17,24,0.96))] p-6 shadow-xl shadow-black/20">
