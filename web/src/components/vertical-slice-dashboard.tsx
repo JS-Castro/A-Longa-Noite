@@ -4,7 +4,12 @@ import { DndContext, useDroppable, type DragEndEvent } from "@dnd-kit/core";
 
 import { BoardView } from "@/components/board-view";
 import { ItemCard } from "@/components/item-card";
-import { actionDefinitions } from "@/lib/game-data";
+import {
+  actionDefinitions,
+  rulesSections,
+  turnPhases,
+  type TurnPhase,
+} from "@/lib/game-data";
 import { useGameStore } from "@/stores/game-store";
 
 const metricTone = (value: number) => {
@@ -20,22 +25,41 @@ const riskTone = {
   alto: "border-rose-400/40 bg-rose-500/10 text-rose-100",
 } as const;
 
+const phaseTone: Record<TurnPhase, string> = {
+  crise: "border-rose-300/30 bg-rose-500/10 text-rose-100",
+  planeamento: "border-amber-300/30 bg-amber-500/10 text-amber-100",
+  acao: "border-sky-300/30 bg-sky-500/10 text-sky-100",
+  resolucao: "border-emerald-300/30 bg-emerald-500/10 text-emerald-100",
+};
+
+const nextPhaseLabel: Record<TurnPhase, string> = {
+  crise: "Avancar para Planeamento",
+  planeamento: "Avancar para Acao",
+  acao: "Avancar para Resolucao",
+  resolucao: "Resolver no painel lateral",
+};
+
 function ShelterDropZone({
   itemCount,
+  enabled,
 }: {
   itemCount: number;
+  enabled: boolean;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: "shelter-dropzone",
+    disabled: !enabled,
   });
 
   return (
     <div
       ref={setNodeRef}
       className={`rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
-        isOver
+        enabled && isOver
           ? "border-amber-300/70 bg-amber-200/12"
-          : "border-white/15 bg-white/5"
+          : enabled
+            ? "border-white/15 bg-white/5"
+            : "border-white/8 bg-white/[0.03] opacity-60"
       }`}
     >
       <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
@@ -45,8 +69,9 @@ function ShelterDropZone({
         Abrigo Preparado
       </p>
       <p className="mt-3 text-sm leading-7 text-stone-300/80">
-        Arrasta cartas para aqui para as preparar no abrigo antes de ligarmos o
-        inventario completo.
+        {enabled
+          ? "Arrasta cartas para aqui para as preparar no abrigo antes de ligarmos o inventario completo."
+          : "Esta zona so fica ativa durante a fase de Planeamento."}
       </p>
       <p className="mt-4 text-xs uppercase tracking-[0.25em] text-amber-100/70">
         Cartas no abrigo: {itemCount}
@@ -55,9 +80,86 @@ function ShelterDropZone({
   );
 }
 
+function RulesPanel({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/60 px-4 py-4 backdrop-blur-sm sm:px-6">
+      <div className="w-full max-w-xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#0d1117] shadow-2xl shadow-black/40">
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+              Regras
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-stone-50">
+              Consulta rapida do turno
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-stone-300/80">
+              Esta referencia fica sempre disponivel para manter clara a ordem do
+              turno e o que pode acontecer em cada fase.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-stone-100 transition hover:bg-white/10"
+            aria-label="Fechar regras"
+          >
+            Fechar
+          </button>
+        </div>
+
+        <div className="max-h-[80vh] overflow-y-auto px-6 py-5">
+          <section className="grid gap-3 md:grid-cols-2">
+            {turnPhases.map((phase) => (
+              <article
+                key={phase.id}
+                className={`rounded-[1.5rem] border p-4 ${phaseTone[phase.id]}`}
+              >
+                <p className="text-xs uppercase tracking-[0.28em] opacity-70">
+                  {phase.label}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-stone-100/90">
+                  {phase.resumo}
+                </p>
+                <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-200/80">
+                  {phase.allowed.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </section>
+
+          <div className="mt-6 space-y-4">
+            {rulesSections.map((section) => (
+              <section
+                key={section.id}
+                className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5"
+              >
+                <h3 className="font-serif text-2xl text-stone-50">
+                  {section.titulo}
+                </h3>
+                <ul className="mt-4 space-y-3 text-sm leading-7 text-stone-300/85">
+                  {section.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function VerticalSliceDashboard() {
   const {
     turno,
+    currentPhase,
     shelter,
     survivors,
     locations,
@@ -68,13 +170,23 @@ export function VerticalSliceDashboard() {
     log,
     selectedActionId,
     selectedChoiceId,
+    rulesOpen,
     setSelectedAction,
     setSelectedChoice,
+    advancePhase,
+    toggleRulesPanel,
+    setRulesPanel,
     moveItemToShelter,
     resolveSelectedAction,
     resetGame,
   } = useGameStore();
   const activeEvent = events[0];
+  const currentPhaseDefinition =
+    turnPhases.find((phase) => phase.id === currentPhase) ?? turnPhases[0];
+  const isPlanningPhase = currentPhase === "planeamento";
+  const isActionPhase = currentPhase === "acao";
+  const isCrisisPhase = currentPhase === "crise";
+  const isResolutionPhase = currentPhase === "resolucao";
   const highlightedLocationIds =
     selectedActionId === "explore_pharmacy"
       ? ["loc_farmacia_encosta"]
@@ -93,186 +205,257 @@ export function VerticalSliceDashboard() {
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_45%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(26,32,44,0.94))] p-6 shadow-2xl shadow-black/30">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-stone-300/70">
-                Vertical Slice
-              </p>
-              <h1 className="mt-3 max-w-2xl font-serif text-4xl leading-tight text-stone-50 sm:text-5xl">
-                A Longa Noite
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-200/80 sm:text-base">
-                Um abrigo isolado, um inverno que nao termina e um grupo a
-                tentar manter-se humano enquanto os `Ermos` se aproximam.
-              </p>
-              <div className="mt-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-stone-300/80">
-                Turno {turno}
+        <button
+          type="button"
+          onClick={toggleRulesPanel}
+          className="fixed right-5 top-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-stone-950/85 font-serif text-xl text-stone-50 shadow-xl shadow-black/30 transition hover:bg-stone-900"
+          aria-label="Abrir regras"
+        >
+          ?
+        </button>
+
+        <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_45%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(26,32,44,0.94))] p-6 shadow-2xl shadow-black/30">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-stone-300/70">
+                  Vertical Slice
+                </p>
+                <h1 className="mt-3 max-w-2xl font-serif text-4xl leading-tight text-stone-50 sm:text-5xl">
+                  A Longa Noite
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-200/80 sm:text-base">
+                  Um abrigo isolado, um inverno que nao termina e um grupo a
+                  tentar manter-se humano enquanto os `Ermos` se aproximam.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-stone-300/80">
+                    Turno {turno}
+                  </div>
+                  <div
+                    className={`inline-flex rounded-full border px-4 py-2 text-xs uppercase tracking-[0.3em] ${phaseTone[currentPhase]}`}
+                  >
+                    Fase: {currentPhaseDefinition.label}
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.3em] text-stone-300/60">
+                  Abrigo ativo
+                </p>
+                <p className="mt-2 font-serif text-2xl text-stone-50">
+                  {shelter.nome}
+                </p>
+                <p className="text-sm text-stone-300/70">{shelter.ameacaExterior}</p>
               </div>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur">
-              <p className="text-xs uppercase tracking-[0.3em] text-stone-300/60">
-                Abrigo ativo
+
+            <div className="mt-6 rounded-[1.75rem] border border-white/10 bg-black/20 p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-400">
+                    Ordem do turno
+                  </p>
+                  <h2 className="mt-2 font-serif text-2xl text-stone-50">
+                    {currentPhaseDefinition.label}
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-stone-300/80">
+                    {currentPhaseDefinition.resumo}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={advancePhase}
+                  disabled={isResolutionPhase}
+                  className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm font-medium text-stone-100 transition hover:bg-white/12 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {nextPhaseLabel[currentPhase]}
+                </button>
+              </div>
+              <div className="mt-4 grid gap-2 md:grid-cols-4">
+                {turnPhases.map((phase) => {
+                  const isCurrent = phase.id === currentPhase;
+
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`rounded-2xl border px-3 py-3 text-sm ${
+                        isCurrent
+                          ? phaseTone[phase.id]
+                          : "border-white/8 bg-white/[0.03] text-stone-400"
+                      }`}
+                    >
+                      {phase.label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-3xl border border-sky-300/20 bg-sky-500/10 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-sky-100/70">
+                  Temperatura
+                </p>
+                <p className="mt-3 font-serif text-3xl text-sky-50">
+                  {shelter.temperatura}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-rose-300/20 bg-rose-500/10 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-rose-100/70">
+                  Moral
+                </p>
+                <p className={`mt-3 font-serif text-3xl ${metricTone(shelter.moral)}`}>
+                  {shelter.moral}%
+                </p>
+              </div>
+              <div className="rounded-3xl border border-amber-300/20 bg-amber-500/10 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-amber-100/70">
+                  Mantimentos
+                </p>
+                <p className="mt-3 font-serif text-3xl text-amber-50">
+                  {shelter.mantimentos} dias
+                </p>
+              </div>
+              <div className="rounded-3xl border border-stone-300/20 bg-stone-500/10 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-stone-100/70">
+                  Pressao da Noite
+                </p>
+                <p
+                  className={`mt-3 font-serif text-3xl ${metricTone(
+                    100 - shelter.pressaoDaNoite,
+                  )}`}
+                >
+                  {shelter.pressaoDaNoite}%
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[1.75rem] border border-emerald-300/15 bg-emerald-500/8 p-5">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
+                    Objetivo principal
+                  </p>
+                  <h2 className="mt-2 font-serif text-2xl text-stone-50">
+                    {objective.titulo}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-stone-300/80">
+                    {objective.descricao}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
+                    Progresso
+                  </p>
+                  <p className="mt-2 font-serif text-3xl text-emerald-100">
+                    {objective.progresso}/{objective.alvo}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 h-3 rounded-full bg-white/8">
+                <div
+                  className="h-3 rounded-full bg-[linear-gradient(90deg,_#34d399,_#bef264)]"
+                  style={{
+                    width: `${(objective.progresso / objective.alvo) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <aside className="rounded-[2rem] border border-white/10 bg-stone-950/85 p-6 shadow-2xl shadow-black/25">
+            <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+              Acao recomendada
+            </p>
+            <h2 className="mt-3 font-serif text-3xl text-stone-50">
+              Escolha do turno
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-stone-300/80">
+              Cada turno respeita agora uma ordem fixa. Consulta as regras a
+              qualquer momento no botao `?`.
+            </p>
+
+            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
+                Fase atual
               </p>
               <p className="mt-2 font-serif text-2xl text-stone-50">
-                {shelter.nome}
+                {currentPhaseDefinition.label}
               </p>
-              <p className="text-sm text-stone-300/70">{shelter.ameacaExterior}</p>
+              <p className="mt-2 text-sm leading-7 text-stone-300/80">
+                {currentPhaseDefinition.resumo}
+              </p>
             </div>
-          </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-3xl border border-sky-300/20 bg-sky-500/10 p-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-sky-100/70">
-                Temperatura
-              </p>
-              <p className="mt-3 font-serif text-3xl text-sky-50">
-                {shelter.temperatura}
-              </p>
+            <div className="mt-6 flex flex-col gap-3">
+              {actionDefinitions.map((action) => {
+                const isSelected = action.id === selectedActionId;
+
+                return (
+                  <button
+                    key={action.id}
+                    type="button"
+                    disabled={!isActionPhase}
+                    onClick={() => setSelectedAction(action.id)}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${
+                      isSelected
+                        ? "border-stone-50 bg-stone-50 text-stone-950"
+                        : "border-white/10 bg-white/5 text-stone-200 hover:border-white/25 hover:bg-white/10"
+                    } ${!isActionPhase ? "cursor-not-allowed opacity-50" : ""}`}
+                  >
+                    <span className="block text-sm font-medium">{action.label}</span>
+                    <span className="mt-1 block text-xs leading-6 opacity-75">
+                      {action.resumo}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="rounded-3xl border border-rose-300/20 bg-rose-500/10 p-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-rose-100/70">
-                Moral
-              </p>
-              <p className={`mt-3 font-serif text-3xl ${metricTone(shelter.moral)}`}>
-                {shelter.moral}%
-              </p>
-            </div>
-            <div className="rounded-3xl border border-amber-300/20 bg-amber-500/10 p-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-amber-100/70">
-                Mantimentos
-              </p>
-              <p className="mt-3 font-serif text-3xl text-amber-50">
-                {shelter.mantimentos} dias
-              </p>
-            </div>
-            <div className="rounded-3xl border border-stone-300/20 bg-stone-500/10 p-4">
-              <p className="text-xs uppercase tracking-[0.25em] text-stone-100/70">
-                Pressao da Noite
-              </p>
-              <p
-                className={`mt-3 font-serif text-3xl ${metricTone(
-                  100 - shelter.pressaoDaNoite,
-                )}`}
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={resolveSelectedAction}
+                disabled={!isResolutionPhase}
+                className="rounded-2xl border border-amber-300/40 bg-amber-100 px-4 py-3 text-sm font-medium text-stone-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-stone-400"
               >
-                {shelter.pressaoDaNoite}%
-              </p>
+                Resolver turno
+              </button>
+              <button
+                type="button"
+                onClick={resetGame}
+                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-stone-100 transition hover:bg-white/10"
+              >
+                Reiniciar prototipo
+              </button>
             </div>
-          </div>
+          </aside>
+        </section>
 
-          <div className="mt-6 rounded-[1.75rem] border border-emerald-300/15 bg-emerald-500/8 p-5">
+        <BoardView
+          locations={locations}
+          shelterName={shelter.nome}
+          survivors={survivors}
+          highlightedLocationIds={highlightedLocationIds}
+        />
+
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="rounded-[2rem] border border-white/10 bg-stone-950/80 p-6 shadow-xl shadow-black/20">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
-                  Objetivo principal
+                <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
+                  Sobreviventes ativos
                 </p>
-                <h2 className="mt-2 font-serif text-2xl text-stone-50">
-                  {objective.titulo}
+                <h2 className="mt-3 font-serif text-3xl text-stone-50">
+                  Estado da colonia
                 </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-stone-300/80">
-                  {objective.descricao}
-                </p>
               </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-[0.25em] text-emerald-100/60">
-                  Progresso
-                </p>
-                <p className="mt-2 font-serif text-3xl text-emerald-100">
-                  {objective.progresso}/{objective.alvo}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 h-3 rounded-full bg-white/8">
-              <div
-                className="h-3 rounded-full bg-[linear-gradient(90deg,_#34d399,_#bef264)]"
-                style={{
-                  width: `${(objective.progresso / objective.alvo) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <aside className="rounded-[2rem] border border-white/10 bg-stone-950/85 p-6 shadow-2xl shadow-black/25">
-          <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
-            Acao recomendada
-          </p>
-          <h2 className="mt-3 font-serif text-3xl text-stone-50">
-            Escolha do turno
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-stone-300/80">
-            O turno ja resolve impacto em moral, mantimentos, combustivel e
-            pressao. Isto e a primeira camada jogavel do prototipo.
-          </p>
-
-          <div className="mt-6 flex flex-col gap-3">
-            {actionDefinitions.map((action) => {
-              const isSelected = action.id === selectedActionId;
-
-              return (
-                <button
-                  key={action.id}
-                  type="button"
-                  onClick={() => setSelectedAction(action.id)}
-                  className={`rounded-2xl border px-4 py-3 text-left transition ${
-                    isSelected
-                      ? "border-stone-50 bg-stone-50 text-stone-950"
-                      : "border-white/10 bg-white/5 text-stone-200 hover:border-white/25 hover:bg-white/10"
-                  }`}
-                >
-                  <span className="block text-sm font-medium">{action.label}</span>
-                  <span className="mt-1 block text-xs leading-6 opacity-75">
-                    {action.resumo}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={resolveSelectedAction}
-              className="rounded-2xl border border-amber-300/40 bg-amber-100 px-4 py-3 text-sm font-medium text-stone-950 transition hover:bg-amber-200"
-            >
-              Resolver turno
-            </button>
-            <button
-              type="button"
-              onClick={resetGame}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-stone-100 transition hover:bg-white/10"
-            >
-              Reiniciar prototipo
-            </button>
-          </div>
-
-        </aside>
-      </section>
-
-      <BoardView
-        locations={locations}
-        shelterName={shelter.nome}
-        survivors={survivors}
-        highlightedLocationIds={highlightedLocationIds}
-      />
-
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[2rem] border border-white/10 bg-stone-950/80 p-6 shadow-xl shadow-black/20">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-stone-400">
-                Sobreviventes ativos
+              <p className="max-w-xs text-right text-sm leading-6 text-stone-400">
+                Cada retrato podera mais tarde abrir inventario, relacoes, feridas
+                e objetivos pessoais.
               </p>
-              <h2 className="mt-3 font-serif text-3xl text-stone-50">
-                Estado da colonia
-              </h2>
             </div>
-            <p className="max-w-xs text-right text-sm leading-6 text-stone-400">
-              Cada retrato podera mais tarde abrir inventario, relacoes, feridas
-              e objetivos pessoais.
-            </p>
-          </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {survivors.map((survivor) => (
@@ -326,7 +509,9 @@ export function VerticalSliceDashboard() {
               Recursos em mao
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300/80">
-              Arrasta as cartas da mao para a area do abrigo logo ao lado.
+              {isPlanningPhase
+                ? "Arrasta as cartas da mao para a area do abrigo logo ao lado."
+                : "As cartas so podem ser movidas durante a fase de Planeamento."}
             </p>
             <div className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <div>
@@ -335,7 +520,12 @@ export function VerticalSliceDashboard() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-4">
                   {handItems.map((item) => (
-                    <ItemCard key={item.id} item={item} compact draggable />
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      compact
+                      draggable={isPlanningPhase}
+                    />
                   ))}
                 </div>
                 {handItems.length === 0 ? (
@@ -350,7 +540,10 @@ export function VerticalSliceDashboard() {
                   Preparacao
                 </p>
                 <div className="mt-4">
-                  <ShelterDropZone itemCount={shelterItems.length} />
+                  <ShelterDropZone
+                    itemCount={shelterItems.length}
+                    enabled={isPlanningPhase}
+                  />
                 </div>
                 {shelterItems.length > 0 ? (
                   <>
@@ -393,12 +586,13 @@ export function VerticalSliceDashboard() {
                   <button
                     key={choice.id}
                     type="button"
+                    disabled={!isCrisisPhase}
                     onClick={() => setSelectedChoice(choice.id)}
                     className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
                       isSelected
                         ? "border-sky-200/50 bg-sky-100/10 text-stone-50"
                         : "border-white/10 bg-white/5 text-stone-200 hover:border-white/20 hover:bg-white/8"
-                    }`}
+                    } ${!isCrisisPhase ? "cursor-not-allowed opacity-50" : ""}`}
                   >
                     <span className="block text-sm font-medium">{choice.label}</span>
                     <span className="mt-2 block text-xs leading-6 opacity-80">
@@ -472,14 +666,15 @@ export function VerticalSliceDashboard() {
               O que ja esta vivo
             </h2>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-stone-200/80">
-              <li>Escolha de acao por turno</li>
+              <li>Escolha de acao por turno com fases bloqueadas</li>
               <li>Resolucao simples de recursos e pressao</li>
-              <li>Evento ativo com escolhas reais</li>
-              <li>Mapa e objetivo principal da sessao</li>
+              <li>Evento ativo com escolhas reais e janela de crise</li>
+              <li>Mapa, objetivo principal e regras acessiveis em UI</li>
             </ul>
           </section>
         </div>
-      </section>
+        </section>
+        {rulesOpen ? <RulesPanel onClose={() => setRulesPanel(false)} /> : null}
       </main>
     </DndContext>
   );

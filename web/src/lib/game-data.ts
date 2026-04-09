@@ -1,4 +1,5 @@
 export type RiskLevel = "baixo" | "medio" | "medio-alto" | "alto";
+export type TurnPhase = "crise" | "planeamento" | "acao" | "resolucao";
 
 export type SurvivorSummary = {
   id: string;
@@ -23,6 +24,7 @@ export type ActionDefinition = {
   id: string;
   label: string;
   resumo: string;
+  allowedPhase: TurnPhase;
 };
 
 export type LocationDefinition = {
@@ -88,8 +90,22 @@ export type TurnLogEntry = {
   detalhe: string;
 };
 
+export type TurnPhaseDefinition = {
+  id: TurnPhase;
+  label: string;
+  resumo: string;
+  allowed: string[];
+};
+
+export type RulesSection = {
+  id: string;
+  titulo: string;
+  items: string[];
+};
+
 export type GameState = {
   turno: number;
+  currentPhase: TurnPhase;
   shelter: ShelterState;
   survivors: SurvivorSummary[];
   locations: LocationDefinition[];
@@ -348,26 +364,110 @@ export const actionDefinitions: ActionDefinition[] = [
     id: "explore_pharmacy",
     label: "Explorar a farmacia da encosta",
     resumo: "Procura medicamentos e mantimentos medicos, mas alonga a exposicao ao frio.",
+    allowedPhase: "acao",
   },
   {
     id: "fortify_gate",
     label: "Reforcar a porta norte",
     resumo: "Baixa a pressao exterior e compra tempo, mas custa combustivel e foco.",
+    allowedPhase: "acao",
   },
   {
     id: "ration_transparency",
     label: "Distribuir racoes com transparencia",
     resumo: "Ganha confianca e moral, mas acelera o consumo dos mantimentos.",
+    allowedPhase: "acao",
   },
   {
     id: "investigate_tower",
     label: "Investigar a torre antes do amanhecer",
     resumo: "Pode revelar pistas sobre o Silencio Branco, com risco alto para a equipa.",
+    allowedPhase: "acao",
+  },
+];
+
+export const turnPhases: TurnPhaseDefinition[] = [
+  {
+    id: "crise",
+    label: "Crise",
+    resumo: "Resolver o dilema imediato da noite e escolher a resposta da colonia.",
+    allowed: [
+      "Escolher a opcao do evento ativo.",
+      "Ler o texto do evento e preparar a decisao do turno.",
+    ],
+  },
+  {
+    id: "planeamento",
+    label: "Planeamento",
+    resumo: "Preparar o abrigo e organizar cartas antes da acao principal.",
+    allowed: [
+      "Arrastar cartas para a zona de preparacao do abrigo.",
+      "Avaliar recursos antes de comprometer a equipa.",
+    ],
+  },
+  {
+    id: "acao",
+    label: "Acao",
+    resumo: "Escolher a jogada principal do turno.",
+    allowed: [
+      "Selecionar a acao principal do turno.",
+      "Confirmar o alvo no tabuleiro antes de passar a resolucao.",
+    ],
+  },
+  {
+    id: "resolucao",
+    label: "Resolucao",
+    resumo: "Aplicar consequencias, atualizar o estado e abrir o turno seguinte.",
+    allowed: [
+      "Resolver o turno.",
+      "Consultar o feed narrativo e confirmar o impacto da jogada.",
+    ],
+  },
+];
+
+export const rulesSections: RulesSection[] = [
+  {
+    id: "flow",
+    titulo: "Estrutura do turno",
+    items: [
+      "Cada turno passa por quatro fases fixas: Crise, Planeamento, Acao e Resolucao.",
+      "Nao se pode saltar diretamente para a acao final sem primeiro fechar a resposta ao evento e a preparacao.",
+      "Depois de resolver o turno, o jogo regressa a Crise para abrir um novo dilema.",
+    ],
+  },
+  {
+    id: "timing",
+    titulo: "Janelas permitidas",
+    items: [
+      "As escolhas do evento ativo so podem ser alteradas durante a fase de Crise.",
+      "O drag and drop das cartas para o abrigo so fica ativo durante Planeamento.",
+      "A selecao da acao principal so fica disponivel durante Acao.",
+      "O botao de resolver turno so funciona durante Resolucao.",
+    ],
+  },
+  {
+    id: "board",
+    titulo: "Base inspirada no board game",
+    items: [
+      "A ordem do turno inspira-se em jogos de sobrevivencia por rondas, com pressao crescente, gestao de abrigo e escolhas de risco.",
+      "O prototipo usa como base a ideia de colonia central, locais exteriores, evento por turno e consequencias encadeadas.",
+      "A implementacao e o universo de A Longa Noite sao originais e podem simplificar ou expandir regras consoante o vertical slice evolui.",
+    ],
+  },
+  {
+    id: "goal",
+    titulo: "Leitura rapida do objetivo",
+    items: [
+      "Tens de proteger o abrigo, manter a moral acima da ruptura e empurrar o objetivo principal ate ao alvo.",
+      "Pressao da noite alta, tensao acumulada e falta de mantimentos tornam os turnos seguintes mais perigosos.",
+      "Nem todas as boas decisoes ajudam imediatamente; algumas compram tempo, outras sacrificam recursos para evitar colapso.",
+    ],
   },
 ];
 
 export const initialGameState: GameState = {
   turno: 1,
+  currentPhase: "crise",
   shelter: shelterState,
   survivors: activeSurvivors,
   locations,

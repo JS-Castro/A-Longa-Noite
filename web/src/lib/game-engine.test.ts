@@ -3,10 +3,15 @@ import { createInitialGameState, resolveTurn } from "@/lib/game-engine";
 describe("game engine", () => {
   it("resolves pharmacy exploration by raising supplies and advancing the turn", () => {
     const state = createInitialGameState();
+    const resolutionState = {
+      ...state,
+      currentPhase: "resolucao" as const,
+    };
 
-    const next = resolveTurn(state, "explore_pharmacy", "repair_now");
+    const next = resolveTurn(resolutionState, "explore_pharmacy", "repair_now");
 
     expect(next.turno).toBe(2);
+    expect(next.currentPhase).toBe("crise");
     expect(next.shelter.mantimentos).toBe(state.shelter.mantimentos + 1);
     expect(next.shelter.combustivel).toBe(state.shelter.combustivel - 1);
     expect(next.shelter.pressaoDaNoite).toBe(state.shelter.pressaoDaNoite - 2);
@@ -17,13 +22,25 @@ describe("game engine", () => {
 
   it("resolves ration transparency by trading supplies for morale", () => {
     const state = createInitialGameState();
+    const resolutionState = {
+      ...state,
+      currentPhase: "resolucao" as const,
+    };
 
-    const next = resolveTurn(state, "ration_transparency", "patch_temp");
+    const next = resolveTurn(resolutionState, "ration_transparency", "patch_temp");
 
     expect(next.shelter.mantimentos).toBe(state.shelter.mantimentos - 1);
     expect(next.shelter.moral).toBe(state.shelter.moral + 4);
     expect(next.shelter.pressaoDaNoite).toBe(state.shelter.pressaoDaNoite + 3);
     expect(next.objective.progresso).toBe(2);
     expect(next.survivors[0]?.tensao).toBeGreaterThan(state.survivors[0]?.tensao ?? 0);
+  });
+
+  it("does not resolve the turn outside the resolution phase", () => {
+    const state = createInitialGameState();
+
+    const next = resolveTurn(state, "explore_pharmacy", "repair_now");
+
+    expect(next).toEqual(state);
   });
 });

@@ -7,6 +7,7 @@ import {
   type GameState,
   type LocationDefinition,
   type SurvivorSummary,
+  type TurnPhase,
   type TurnLogEntry,
 } from "@/lib/game-data";
 
@@ -62,8 +63,20 @@ const choiceById = (
 ): EventChoice | undefined =>
   event?.choices.find((choice) => choice.id === choiceId) ?? event?.choices[0];
 
+const phaseOrder: TurnPhase[] = ["crise", "planeamento", "acao", "resolucao"];
+
 export const createInitialGameState = (): GameState =>
   JSON.parse(JSON.stringify(initialGameState)) as GameState;
+
+export const getNextPhase = (phase: TurnPhase): TurnPhase => {
+  if (phase === "resolucao") {
+    return "resolucao";
+  }
+
+  const currentIndex = phaseOrder.indexOf(phase);
+
+  return phaseOrder[(currentIndex + 1) % phaseOrder.length] ?? "crise";
+};
 
 const applyChoiceImpact = (state: GameState, choice: EventChoice): GameState => ({
   ...state,
@@ -108,6 +121,10 @@ export const resolveTurn = (
   actionId: string,
   choiceId: string | null,
 ): GameState => {
+  if (state.currentPhase !== "resolucao") {
+    return state;
+  }
+
   const nextTurn = state.turno + 1;
   const action = actionById(actionId);
   const currentEvent = state.events[0];
@@ -121,6 +138,7 @@ export const resolveTurn = (
       return {
         ...stateAfterChoice,
         turno: nextTurn,
+        currentPhase: "crise",
         selectedActionId: action.id,
         selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
@@ -160,6 +178,7 @@ export const resolveTurn = (
       return {
         ...stateAfterChoice,
         turno: nextTurn,
+        currentPhase: "crise",
         selectedActionId: action.id,
         selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
@@ -196,6 +215,7 @@ export const resolveTurn = (
       return {
         ...stateAfterChoice,
         turno: nextTurn,
+        currentPhase: "crise",
         selectedActionId: action.id,
         selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
@@ -231,6 +251,7 @@ export const resolveTurn = (
       return {
         ...stateAfterChoice,
         turno: nextTurn,
+        currentPhase: "crise",
         selectedActionId: action.id,
         selectedChoiceId: state.events[1]?.choices[0]?.id ?? null,
         shelter: {
