@@ -31,6 +31,7 @@ describe("VerticalSliceDashboard", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Recursos em mao" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Cartas no abrigo: 0/i)).toBeInTheDocument();
   });
 
   it("resolves a turn when the action button is clicked", () => {

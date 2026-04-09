@@ -1,5 +1,7 @@
 "use client";
 
+import { DndContext, useDroppable, type DragEndEvent } from "@dnd-kit/core";
+
 import { BoardView } from "@/components/board-view";
 import { ItemCard } from "@/components/item-card";
 import { actionDefinitions } from "@/lib/game-data";
@@ -18,6 +20,41 @@ const riskTone = {
   alto: "border-rose-400/40 bg-rose-500/10 text-rose-100",
 } as const;
 
+function ShelterDropZone({
+  itemCount,
+}: {
+  itemCount: number;
+}) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: "shelter-dropzone",
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`mt-6 rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
+        isOver
+          ? "border-amber-300/70 bg-amber-200/12"
+          : "border-white/15 bg-white/5"
+      }`}
+    >
+      <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
+        Zona de Drop
+      </p>
+      <p className="mt-3 font-serif text-2xl text-stone-50">
+        Abrigo Preparado
+      </p>
+      <p className="mt-3 text-sm leading-7 text-stone-300/80">
+        Arrasta cartas para aqui para as preparar no abrigo antes de ligarmos o
+        inventario completo.
+      </p>
+      <p className="mt-4 text-xs uppercase tracking-[0.25em] text-amber-100/70">
+        Cartas no abrigo: {itemCount}
+      </p>
+    </div>
+  );
+}
+
 export function VerticalSliceDashboard() {
   const {
     turno,
@@ -25,13 +62,15 @@ export function VerticalSliceDashboard() {
     survivors,
     locations,
     objective,
-    itemDeck,
+    handItems,
+    shelterItems,
     events,
     log,
     selectedActionId,
     selectedChoiceId,
     setSelectedAction,
     setSelectedChoice,
+    moveItemToShelter,
     resolveSelectedAction,
     resetGame,
   } = useGameStore();
@@ -45,8 +84,15 @@ export function VerticalSliceDashboard() {
           ? ["loc_torre_observacao"]
           : [];
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (event.over?.id === "shelter-dropzone") {
+      moveItemToShelter(String(event.active.id));
+    }
+  };
+
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <DndContext onDragEnd={handleDragEnd}>
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <section className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_45%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(26,32,44,0.94))] p-6 shadow-2xl shadow-black/30">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -200,6 +246,8 @@ export function VerticalSliceDashboard() {
               Reiniciar prototipo
             </button>
           </div>
+
+          <ShelterDropZone itemCount={shelterItems.length} />
         </aside>
       </section>
 
@@ -279,10 +327,27 @@ export function VerticalSliceDashboard() {
               Recursos em mao
             </h2>
             <div className="mt-6 flex flex-wrap gap-4">
-              {itemDeck.slice(0, 3).map((item) => (
-                <ItemCard key={item.id} item={item} compact />
+              {handItems.map((item) => (
+                <ItemCard key={item.id} item={item} compact draggable />
               ))}
             </div>
+            {handItems.length === 0 ? (
+              <p className="mt-4 text-sm leading-7 text-stone-400">
+                Todas as cartas desta mao foram colocadas no abrigo.
+              </p>
+            ) : null}
+            {shelterItems.length > 0 ? (
+              <>
+                <p className="mt-8 text-xs uppercase tracking-[0.35em] text-stone-400">
+                  Cartas no abrigo
+                </p>
+                <div className="mt-4 flex flex-wrap gap-4">
+                  {shelterItems.map((item) => (
+                    <ItemCard key={`shelter_${item.id}`} item={item} compact />
+                  ))}
+                </div>
+              </>
+            ) : null}
           </section>
 
           <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(28,35,47,0.96),_rgba(13,17,24,0.96))] p-6 shadow-xl shadow-black/20">
@@ -393,6 +458,7 @@ export function VerticalSliceDashboard() {
           </section>
         </div>
       </section>
-    </main>
+      </main>
+    </DndContext>
   );
 }

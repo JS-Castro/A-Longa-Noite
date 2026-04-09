@@ -1,19 +1,48 @@
 "use client";
 
+import { useDraggable } from "@dnd-kit/core";
+
 import type { ItemCardData } from "@/lib/game-data";
 
 type ItemCardProps = {
   item: ItemCardData;
   compact?: boolean;
+  draggable?: boolean;
 };
 
-export function ItemCard({ item, compact = false }: ItemCardProps) {
+export function ItemCard({
+  item,
+  compact = false,
+  draggable = false,
+}: ItemCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: item.id,
+      disabled: !draggable,
+      data: {
+        type: "item-card",
+        itemId: item.id,
+      },
+    });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
   return (
     <article
+      ref={setNodeRef}
+      {...(draggable ? listeners : {})}
+      {...(draggable ? attributes : {})}
       className={`relative overflow-hidden rounded-[1.6rem] border border-stone-300/35 bg-[linear-gradient(180deg,_rgba(255,248,235,0.96),_rgba(230,220,203,0.96))] text-stone-900 shadow-xl shadow-black/25 ${
         compact ? "w-[15rem]" : "w-full max-w-[17rem]"
+      } ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${
+        isDragging ? "opacity-70" : ""
       }`}
       style={{
+        ...style,
         boxShadow: `0 10px 30px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(255,255,255,0.18)`,
       }}
     >

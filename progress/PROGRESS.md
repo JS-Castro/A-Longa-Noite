@@ -35,6 +35,8 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - localizacoes, rotas e abrigo central agora visiveis como board
 - primeira linguagem visual de cartas integrada no prototipo
 - recursos apresentados como cartas de board game digital
+- drag and drop inicial de cartas para o abrigo implementado
+- zona de drop do abrigo ligada a estado simples de mao/inventario
 
 ## Em Curso
 
@@ -45,6 +47,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - aproximar dados de jogo de formatos estruturados reaproveitaveis
 - usar o board para selecao e interacao direta com localizacoes
 - ligar cartas a inventario e loot do turno
+- usar drag and drop tambem para localizacoes e sobreviventes
 
 ## Proximo
 
@@ -71,6 +74,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - o prototipo ja mostra progresso de sessao e estado do mapa
 - o prototipo ja tem uma representacao visual de tabuleiro
 - o prototipo ja mistura tabuleiro, dashboard e cartas
+- o prototipo ja suporta interacao fisica basica com cartas
 
 ## Backlog Curto
 
@@ -97,3 +101,4 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - integracao do objetivo principal e do mapa inicial na experiencia jogavel
 - criacao da primeira camada visual de board game digital
 - criacao das primeiras cartas visuais de recurso
+- introducao de drag and drop para cartas no single player
