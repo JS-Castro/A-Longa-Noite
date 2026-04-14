@@ -24,9 +24,7 @@ test("shows the rulebook and enforces the turn phases", async ({ page }) => {
 
   await page.getByRole("button", { name: "Avancar para Acao" }).click();
   await expect(page.getByText("Fase: Acao")).toBeVisible();
-  await page
-    .getByRole("button", { name: "Distribuir racoes com transparencia" })
-    .click();
+  await page.getByTestId("board-location:loc_farmacia_encosta").click();
 
   await page.getByRole("button", { name: "Avancar para Resolucao" }).click();
   await expect(page.getByText("Fase: Resolucao")).toBeVisible();

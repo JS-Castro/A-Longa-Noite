@@ -1,0 +1,74 @@
+[
+  {
+    "id": "objective_alma_macedo_1",
+    "survivorId": "survivor_alma_macedo",
+    "titulo": "Redenção através do Cuidado",
+    "descricao": "Salvar um aliado ferido ou doente sem sacrificar a segurança de outro. Alma precisa de provar a si mesma que não está condenada a repetir o abandono que a assombra. Cada ato de cura genuína é um passo para deixar o fantasma para trás.",
+    "motivacao": "Ao contrário da evacuação inicial, desta vez Alma vai estar present e vai fazer a escolha certa. A redenção não é sobre negar o passado, mas sobre agir diferente quando importa.",
+    "progresso": 0,
+    "alvo": 4,
+    "type": "redemption",
+    "rewardMoral": 8,
+    "rewardTension": -2
+  },
+  {
+    "id": "objective_tomas_barradas_1",
+    "survivorId": "survivor_tomas_barradas",
+    "titulo": "O Gerador Permanece",
+    "descricao": "Manter o gerador funcional durante 5 turnos consecutivos, mesmo enfrentando escassez ou sabotagem. Tomas encontra propósito no trabalho - enquanto as máquinas funcionarem, ele não é inútil. É a prova tangível de que ainda serve.",
+    "motivacao": "Tomas teme ficar inútil mais do que teme morrer. O gerador é o seu lugar no abrigo. Se ele conseguir mantê-lo aceso, prova que ainda tem valor.",
+    "progresso": 0,
+    "alvo": 5,
+    "type": "duty",
+    "rewardMoral": 7,
+    "rewardTension": -3
+  },
+  {
+    "id": "objective_ines_seixo_1",
+    "survivorId": "survivor_ines_seixo",
+    "titulo": "Sinais do Mundo Exterior",
+    "descricao": "Receber uma transmissão clara ou descobrir uma pista credível de que existem outros sobreviventes fora da serra. Ines não pode viver numa ilusão de isolamento total - o mundo inteiro não pode ter acabado em silêncio.",
+    "motivacao": "A curiosidade de Ines é um fio frágil ligado à esperança. Encontrar prova de que ainda existe algo além da serra é a diferença entre viver e apenas sobreviver.",
+    "progresso": 0,
+    "alvo": 3,
+    "type": "connection",
+    "rewardMoral": 6,
+    "rewardTension": -2
+  },
+  {
+    "id": "objective_roque_vale_1",
+    "survivorId": "survivor_roque_vale",
+    "titulo": "Ordem sem Ruína",
+    "descricao": "Impor e manter controlo no abrigo durante uma crise (rebelião, racionamento crítico, ou ameaça externa) sem permitir perdas irrecuperáveis de moral ou lealdade. Roque vive num paradoxo - quanto mais duramente governa, mais longe empurra aqueles que poderia proteger.",
+    "motivacao": "Roque sabe que o panico mata tão depressa quanto qualquer inimigo externo. Mas também sente, ainda que o negue, que há um preço para a autoridade. Se conseguir manter ordem sem destruir o abrigo por dentro, talvez tenha justificação.",
+    "progresso": 0,
+    "alvo": 4,
+    "type": "duty",
+    "rewardMoral": 5,
+    "rewardTension": -1
+  },
+  {
+    "id": "objective_leonor_vilar_1",
+    "survivorId": "survivor_leonor_vilar",
+    "titulo": "Explorador Imprescindível",
+    "descricao": "Completar 3 expedições de exploração com sucesso sem sofrer ferimentos graves que a deixem fora de ação. Leonor precisa de ser o tipo de pessoa que regressa sempre, a que o abrigo não consegue viver sem - não uma carga que aguarda resgate.",
+    "motivacao": "Leonor foi criada a correr, porque ficar quieta era perigoso. Agora corre porque precisa de provar que é indispensável. Cada expedição bem-sucedida é uma afirmação de que merecia estar ali desde o início.",
+    "progresso": 0,
+    "alvo": 3,
+    "type": "duty",
+    "rewardMoral": 7,
+    "rewardTension": -2
+  },
+  {
+    "id": "objective_duarte_caeiro_1",
+    "survivorId": "survivor_duarte_caeiro",
+    "titulo": "Preservação da Verdade",
+    "descricao": "Documentar honestamente 5 eventos críticos do abrigo nos registos, incluindo perdas, conflitos e decisões difíceis. Duarte já alterou a verdade uma vez e sente o peso. Se conseguir manter os registos puros até ao final, pelo menos a história que sobreviver será real.",
+    "motivacao": "Duarte acredita que a memória é uma forma de resistência. Mas uma memória falsificada não é resistência - é esquecimento. Precisa de redimir-se através da precisão e da coragem de dizer exatamente o que aconteceu.",
+    "progresso": 0,
+    "alvo": 5,
+    "type": "redemption",
+    "rewardMoral": 8,
+    "rewardTension": -2
+  }
+]

@@ -1,0 +1,485 @@
+[
+  {
+    "id": "shelter_broken_wire",
+    "titulo": "O Fio no Gerador",
+    "tipo": "abrigo",
+    "local": "Sala das maquinas",
+    "gatilho": "inicio de turno com frio elevado",
+    "texto": "O gerador soluça duas vezes e cala-se durante um segundo demasiado longo. Tomas afasta a grelha com as maos nuas e mostra um cabo queimado. Se nao o substituirem hoje, o aquecimento pode falhar de vez durante a noite.",
+    "tom": "urgencia tecnica e desgaste",
+    "risco": "medio",
+    "tags": ["gerador", "frio", "manutencao"],
+    "choices": [
+      {
+        "id": "repair_now",
+        "label": "Reparar ja",
+        "detalhe": "Gasta combustivel e folego para estabilizar o aquecimento antes da noite cair.",
+        "consequenceTitle": "Gerador estabilizado",
+        "consequenceDetail": "A equipa resolveu o problema antes do pior frio. O abrigo gastou recursos, mas a moral segurou-se.",
+        "requisito": "ter sucata e combustivel",
+        "impact": {
+          "combustivel": -1,
+          "moral": 2,
+          "pressaoDaNoite": -6,
+          "survivorTension": 2,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "patch_temp",
+        "label": "Fazer remendo temporario",
+        "detalhe": "Poupa combustivel agora, mas arrisca deixar a colonia vulneravel durante a madrugada.",
+        "consequenceTitle": "Remendo inseguro",
+        "consequenceDetail": "O sistema voltou a trabalhar, mas os estalidos no gerador fizeram crescer o medo de uma falha pior.",
+        "requisito": "Tomas Barradas ou astucia alta",
+        "impact": {
+          "combustivel": 0,
+          "moral": -1,
+          "pressaoDaNoite": 5,
+          "survivorTension": 4
+        }
+      }
+    ]
+  },
+  {
+    "id": "shelter_steps_tower",
+    "titulo": "Passos na Torre",
+    "tipo": "abrigo",
+    "local": "Torre de observacao",
+    "gatilho": "noite com pressao elevada",
+    "texto": "A vigia da madrugada jura ter ouvido passos na escada da torre, lentos e arrastados, mas nao encontrou ninguem no topo. O mais estranho e que a porta estava trancada por dentro.",
+    "tom": "inquietacao e misterio",
+    "risco": "medio-alto",
+    "tags": ["misterio", "torre", "silencio-branco"],
+    "choices": [
+      {
+        "id": "investigate_tower",
+        "label": "Investigar discretamente antes do amanhecer",
+        "detalhe": "Enviar uma equipa de confiança para explorar a torre sem alarmar o abrigo.",
+        "consequenceTitle": "Descoberta assustadora",
+        "consequenceDetail": "Nao encontram ninguem, mas os passos na escada estao frios. Levanta mais perguntas.",
+        "requisito": "coragem ou astucia alta",
+        "impact": {
+          "moral": -3,
+          "pressaoDaNoite": 3,
+          "survivorTension": 8,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "seal_tower",
+        "label": "Fechar a torre e proibir rondas a solo",
+        "detalhe": "Uma decisao cautelosa que reduz risco imediato.",
+        "consequenceTitle": "Isolamento defensivo",
+        "consequenceDetail": "A torre fica lacrada. Perde-se observacao, mas o abrigo respira mais facil.",
+        "requisito": "nenhum",
+        "impact": {
+          "moral": -2,
+          "pressaoDaNoite": 1,
+          "survivorTension": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "shelter_thin_soup",
+    "titulo": "Sopa Racionada",
+    "tipo": "abrigo",
+    "local": "Estacao Vaga-Lume",
+    "gatilho": "mantimentos baixos",
+    "texto": "A panela chega a ferver, mas o cheiro nao convence ninguem. A agua foi esticada, os legumes ja nao chegam para todos e ha olhares demasiado longos na fila. Duarte sugere transparencia. Roque quer distribuir em silencio e acabar com a conversa.",
+    "tom": "tensao social",
+    "risco": "medio",
+    "tags": ["fome", "moral", "lideranca"],
+    "choices": [
+      {
+        "id": "transparency_meal",
+        "label": "Reunir todos e explicar a situacao",
+        "detalhe": "Honestidade sobre a comida e as opcoes.",
+        "consequenceTitle": "Verdade e apoio",
+        "consequenceDetail": "Alguns lidam melhor com a verdade. Outros desmoronam. A coesao fica fragil mas baseada em factos.",
+        "requisito": "Duarte Caeiro ou empatia alta",
+        "impact": {
+          "moral": 1,
+          "survivorTension": -2,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "silent_rationing",
+        "label": "Racionar sem debate e reforcar a disciplina",
+        "detalhe": "Ordem sem explicacoes. Quem nao comer tera menos ainda.",
+        "consequenceTitle": "Orde ferro",
+        "consequenceDetail": "A fila desceu sem protesto. A tensao subiu em silencio.",
+        "requisito": "Roque Vale ou defesa alta",
+        "impact": {
+          "moral": -2,
+          "survivorTension": 4,
+          "pressaoDaNoite": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_sunken_pharmacy",
+    "titulo": "Farmacia Afundada",
+    "tipo": "exploracao",
+    "local": "Farmacia da Encosta",
+    "gatilho": "equipa enviada para scavenging medico",
+    "texto": "A montra partiu-se ha semanas e a neve empurrou-se para dentro como cimento molhado. As prateleiras mais baixas estao perdidas, mas ha caixas intactas presas atras do balcao tombado.",
+    "tom": "oportunidade com risco fisico",
+    "risco": "medio",
+    "tags": ["medicina", "saque", "neve"],
+    "choices": [
+      {
+        "id": "careful_excavation",
+        "label": "Escavar com cuidado para recuperar material medico",
+        "detalhe": "Trabalho lento mas seguro.",
+        "consequenceTitle": "Saque valioso",
+        "consequenceDetail": "Medicamentos valiosos recuperados. A equipa chega tarde ao abrigo mas inteira.",
+        "requisito": "tempo de acao suficiente",
+        "impact": {
+          "mantimentos": 2,
+          "survivorTension": 2,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "force_pharmacy",
+        "label": "Forcar a passagem e sacar tudo o que der",
+        "detalhe": "Rapido mas perigoso.",
+        "consequenceTitle": "Saque caricaco",
+        "consequenceDetail": "Medicamentos conseguidos mas com ferimentos na equipa. O ruido chamou atencao.",
+        "requisito": "forca alta",
+        "impact": {
+          "mantimentos": 3,
+          "survivorTension": 6,
+          "pressaoDaNoite": 4
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_fire_chapel",
+    "titulo": "Fogo na Capela",
+    "tipo": "exploracao",
+    "local": "Capela da Estrada Velha",
+    "gatilho": "patrulha de longo alcance",
+    "texto": "Ao longe, entre os flocos densos, ve-se luz viva dentro da capela abandonada. Fogo recente. Sinal humano. Ou isco.",
+    "tom": "suspense e ambiguidade",
+    "risco": "medio-alto",
+    "tags": ["faccao", "emboscada", "abrigo-secundario"],
+    "choices": [
+      {
+        "id": "silent_approach",
+        "label": "Aproximar em silencio e observar primeiro",
+        "detalhe": "Recolher informacao antes de agir.",
+        "consequenceTitle": "Observacao silenciosa",
+        "consequenceDetail": "Pessoas na capela. Nao Ermos. A informacao pode mudar tudo.",
+        "requisito": "Leonor Vilar ou risco reduzido",
+        "impact": {
+          "moral": 2,
+          "objectiveProgress": 1,
+          "pressaoDaNoite": -2
+        }
+      },
+      {
+        "id": "aggressive_entry",
+        "label": "Entrar rapidamente e reclamar o espaco",
+        "detalhe": "Iniciativa agressiva.",
+        "consequenceTitle": "Confronto quente",
+        "consequenceDetail": "Disparos. Dois feridos, um deles gravemente. Mas a capela e vossa.",
+        "requisito": "Roque Vale ou forca alta",
+        "impact": {
+          "moral": -4,
+          "survivorTension": 8,
+          "pressaoDaNoite": 6
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_voices_fog",
+    "titulo": "Vozes no Nevoeiro",
+    "tipo": "exploracao",
+    "local": "Trilho do Pinhal",
+    "gatilho": "deslocacao em condicoes de baixa visibilidade",
+    "texto": "O nevoeiro fecha-se de repente e alguem ouve o proprio nome chamado a poucos metros, com a voz certa mas no lugar impossivel. O trilho divide-se em dois e nenhum deles estava ali antes.",
+    "tom": "estranheza e desorientacao",
+    "risco": "alto",
+    "tags": ["exploracao", "nevoeiro", "silencio-branco"],
+    "choices": [
+      {
+        "id": "follow_voice",
+        "label": "Seguir a voz",
+        "detalhe": "Desaparece alguem ou encontram algo.",
+        "consequenceTitle": "Desaparição",
+        "consequenceDetail": "A equipa perde um membro. Ninguem sabe o que aconteceu. O silencio branco acabou de cobrar preco.",
+        "requisito": "stress controlado",
+        "impact": {
+          "moral": -8,
+          "pressaoDaNoite": 15,
+          "survivorTension": 12,
+          "objectiveProgress": -2
+        }
+      },
+      {
+        "id": "disciplined_retreat",
+        "label": "Marcar o caminho e recuar com disciplina",
+        "detalhe": "Evitar o desconhecido.",
+        "consequenceTitle": "Retirada segura",
+        "consequenceDetail": "A equipa volta inteira mas traumatizada. O trilho misterioso fica registado.",
+        "requisito": "Ines Seixo ou astucia alta",
+        "impact": {
+          "moral": -2,
+          "survivorTension": 5,
+          "objectiveProgress": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "shelter_power_struggle",
+    "titulo": "Luta pela Autoridade",
+    "tipo": "abrigo",
+    "local": "Sala de reunioes, Estacao Vaga-Lume",
+    "gatilho": "decisao impopular do lider ou tensao acumulada",
+    "texto": "A discussao sobre racionamento de combustivel escala. Roque Vale levanta-se e acusa Duarte Caeiro de sacrificar os mais fortes para salvar os fracos. A divisao da sala é clara: os que trabajam com as maos apoiam Roque. Os que pensam em futuro apoiam Duarte. Helena Sousa, sentada no canto, observa em silencio e coloca a mao na arma de emergencia.",
+    "tom": "confronto direto e risco de motim",
+    "risco": "alto",
+    "tags": ["lideranca", "motim", "tensao-interna", "autoridade"],
+    "choices": [
+      {
+        "id": "allow_confrontation",
+        "label": "Permitir confronto verbal e deixar que a sala decida",
+        "detalhe": "Expor o conflito em vez de o enterrar.",
+        "consequenceTitle": "Divisao cristalizada",
+        "consequenceDetail": "A hierarquia fica mais natural, mas um lado fica profundamente ressentido e pode sabotagem futura.",
+        "requisito": "nenhum",
+        "impact": {
+          "moral": -2,
+          "survivorTension": 8,
+          "objectiveProgress": 0
+        }
+      },
+      {
+        "id": "authoritarian_exile",
+        "label": "Intervir com autoridade, exilar uma das faccoes temporariamente",
+        "detalhe": "Reestabelecer ordem com mao de ferro.",
+        "consequenceTitle": "Repressao pelo ferro",
+        "consequenceDetail": "Ordem imediata e medo. Um grupo sai com rancor ardente que pode converter em sabotagem mortal.",
+        "requisito": "Helena Sousa ou carisma alto",
+        "impact": {
+          "moral": -3,
+          "survivorTension": 10,
+          "pressaoDaNoite": 2,
+          "objectiveProgress": -1
+        }
+      }
+    ]
+  },
+  {
+    "id": "shelter_fever_outbreak",
+    "titulo": "Febre Estranha",
+    "tipo": "abrigo",
+    "local": "Enfermaria, Estacao Vaga-Lume",
+    "gatilho": "vários sobreviventes com sintomas simultaneamente",
+    "texto": "Tres pessoas acordaram com febre alta e delírio. As maos tremem, alguns falam coisas que nao fazem sentido, um chora sem razão. A medicação habitual nao funciona. Nao há sinais classicos de gripe. Tomas Barradas, que fez uns cursos de primeiros socorros antes do silencio, sugere isolamento total. Alguém sussurra que é contagio vindo da zona de exploracao.",
+    "tom": "medo, paranoia, incerteza medica",
+    "risco": "medio-alto",
+    "tags": ["doenca", "paranoia", "isolamento", "saude-publica"],
+    "choices": [
+      {
+        "id": "strict_isolation",
+        "label": "Isolar os doentes e interditar a area da enfermaria",
+        "detalhe": "Separacao total e contencao.",
+        "consequenceTitle": "Isolamento completo",
+        "consequenceDetail": "Reduz risco de propagacao. O medo propaga-se mesmo sem contato; moral cai entre quem fica isolado.",
+        "requisito": "Tomas Barradas ou medicamentos suficientes",
+        "impact": {
+          "mantimentos": -1,
+          "moral": -3,
+          "pressaoDaNoite": 4,
+          "survivorTension": 6,
+          "objectiveProgress": 0
+        }
+      },
+      {
+        "id": "monitored_integration",
+        "label": "Manter os doentes entre a populacao mas com monitorizacao intensiva",
+        "detalhe": "Empatia sobre paranoia.",
+        "consequenceTitle": "Convivio arriscado",
+        "consequenceDetail": "Coeso social mantida. Se for contagio, a despreaticidade pode ser desastrosa nas proximas semanas.",
+        "requisito": "empatia alta ou lideranca forte",
+        "impact": {
+          "moral": 1,
+          "pressaoDaNoite": 6,
+          "survivorTension": -2,
+          "objectiveProgress": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "shelter_night_theft",
+    "titulo": "Roubo Noturno",
+    "tipo": "abrigo",
+    "local": "Armazem e Dormitorios, Estacao Vaga-Lume",
+    "gatilho": "inventario faltam mantimentos ou combustivel",
+    "texto": "O inventario da madrugada revela que faltam racionamentos de tres dias e um cilindro inteiro de combustivel. Ninguém entra ou sai do abrigo sem ser notado—exceto pelos tuneis de emergencia que foram lacrados. Leonor Vilar encontra marca de unhas na fechadura do armazem. Ha rumores suspeitos sobre um novo residente que chegou ha duas semanas, Guilherme, ex-comerciante que sempre falava em poder chegar a Ermos.",
+    "tom": "suspicao, traicao, paranoia",
+    "risco": "medio",
+    "tags": ["traicao", "roubo", "paranoia", "justica"],
+    "choices": [
+      {
+        "id": "public_interrogation",
+        "label": "Interrogar Guilherme publicamente e revistar todos os quartos",
+        "detalhe": "Justica rapida e visivel.",
+        "consequenceTitle": "Verdade ou acusacao falsa",
+        "consequenceDetail": "Se culpado, exilio deixa inimigo furioso fora. Se inocente, dano de confianca mina solidariedade.",
+        "requisito": "nenhum",
+        "impact": {
+          "moral": -2,
+          "survivorTension": 7,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "silent_investigation",
+        "label": "Investigar em silencio com grupo de confiança, acompanhar Guilherme discretamente",
+        "detalhe": "Paciencia e prova concreta.",
+        "consequenceTitle": "Prova em flagrante",
+        "consequenceDetail": "Apanha o culpado em ato ou descobre cumplicidade dentro de casa. Tempo para agir com informacao completa.",
+        "requisito": "Leonor Vilar ou astucia alta",
+        "impact": {
+          "moral": 0,
+          "survivorTension": 2,
+          "objectiveProgress": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_impossible_tracks",
+    "titulo": "Pegadas Impossíveis",
+    "tipo": "exploracao",
+    "local": "Vale do Rio Branco",
+    "gatilho": "patrulha de reconhecimento em zona nao mapeada",
+    "texto": "A equipa de scouting encontra uma fileira de pegadas na neve, profundas e regulares, que vai de norte a sul. O que é estranho: nao há vestigios de sangue, nao há sinais de arrastamento, e a pegada nao corresponde a nenhuma criatura conhecida—é grande demais para humano, estruturada demais para animal selvagem. As pegadas desaparecem de repente num circulo, como se algo tivesse levantado voo.",
+    "tom": "misterio arrepiante e assombro",
+    "risco": "alto",
+    "tags": ["misterio", "rastreamento", "silencio-branco", "desconhecido"],
+    "choices": [
+      {
+        "id": "follow_tracks",
+        "label": "Seguir o rasto e marcar a direcao para investigacao futura",
+        "detalhe": "Risco para recolher inteligencia.",
+        "consequenceTitle": "Obsessao perigosa",
+        "consequenceDetail": "Ganham informacao e objetivo novo. Aumenta fixacao na zona e risco de provocar o desconhecido.",
+        "requisito": "rastreadores treinados ou coragem alta",
+        "impact": {
+          "moral": -1,
+          "pressaoDaNoite": 7,
+          "survivorTension": 5,
+          "objectiveProgress": 1
+        }
+      },
+      {
+        "id": "document_retreat",
+        "label": "Documentar e recuar imediatamente, guardando secrecy",
+        "detalhe": "Cautela acima de curiosidade.",
+        "consequenceTitle": "Padrao revelado",
+        "consequenceDetail": "Evita provocacao. Descobre-se mais tarde que ha documentação em zonas paralelas—sugestão de padrao coordenado.",
+        "requisito": "Ines Seixo ou cautela alta",
+        "impact": {
+          "moral": 0,
+          "pressaoDaNoite": 3,
+          "survivorTension": 2,
+          "objectiveProgress": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_ghost_camp",
+    "titulo": "Acampamento Fantasma",
+    "tipo": "exploracao",
+    "local": "Floresta de Ermos, encosta nordeste",
+    "gatilho": "patrulha explora territorio reclamado por Ermos",
+    "texto": "A estrutura de tendas ja esta esfarelada, as brasas da fogueira estao frias ha semanas. Ha corpos—ou eram. Tres esqueletos em sacos de dormir, dispostos em circulo como se tivessem morrido ao mesmo tempo. Nas tábuas de madeira, escritas a carvão: \"Silencio tomou-os\", \"Agua envenenada?\", \"Sair e morrer\". Um diário parcialmente legível revela que eram Ermos, separados do grupo principal, e que ouviram algo a noite que os fez... parar.",
+    "tom": "desolacao, horror silencioso, aviso",
+    "risco": "medio-alto",
+    "tags": ["ermos", "morte", "exploracao", "pista-narrativa"],
+    "choices": [
+      {
+        "id": "collect_diary",
+        "label": "Recolher o diário e documentacao; possivel armadilha ou teste da Ermos",
+        "detalhe": "Inteligencia com risco.",
+        "consequenceTitle": "Segredos revelados",
+        "consequenceDetail": "Informacao valiosa mas risco de intoxicacao ou maldição supersticiosa. Descobre padroes de morte nao naturais.",
+        "requisito": "coragem ou investigacao",
+        "impact": {
+          "moral": -2,
+          "pressaoDaNoite": 5,
+          "survivorTension": 3,
+          "objectiveProgress": 2
+        }
+      },
+      {
+        "id": "abandon_site",
+        "label": "Abandonar o local e nao regressar; queimar mentalmente as coordenadas",
+        "detalhe": "Ignorancia e seguranca.",
+        "consequenceTitle": "Pista perdida",
+        "consequenceDetail": "Evita contaminacao e territorio hostil. Perde-se informacao critica sobre ameacas externas.",
+        "requisito": "nenhum",
+        "impact": {
+          "moral": -1,
+          "pressaoDaNoite": 2,
+          "survivorTension": 0,
+          "objectiveProgress": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "explore_broken_signal",
+    "titulo": "Transmissao Quebrada",
+    "tipo": "exploracao",
+    "local": "Repetidor de Radio, Pico do Carteiro",
+    "gatilho": "comunicacoes com base externa falham ou sinais estranhos sao interceptados",
+    "texto": "O repetidor do Pico do Carteiro comecou a emitir uma frequencia anomala—nao é ruido branco, é um padrao. Repete a cada 47 segundos. A equipa que sobe para investigar encontra o equipamento intacto, mas as baterias estao drenadas ja a semanas. Impossivel. Ninguém sobe la ha um mes. E no diario de manutencao, a ultima entrada de dois meses atras foi rasgada—deliberadamente.",
+    "tom": "anormalidade tecnica e suspeita de intervencao externa",
+    "risco": "medio",
+    "tags": ["comunicacoes", "tecnologia", "suspicao", "sinal-misterioso"],
+    "choices": [
+      {
+        "id": "decode_signal",
+        "label": "Tentar descodificar o padrao e rastrear a origem do sinal",
+        "detalhe": "Risco intelectual de revelacao.",
+        "consequenceTitle": "Contacto encontrado",
+        "consequenceDetail": "Descobre se é mensagem humana ou fenomeno anormal. Pode revelar facção desconhecida ou activar defesa antiga.",
+        "requisito": "Tomas Barradas ou competencia tecnica alta",
+        "impact": {
+          "moral": 1,
+          "pressaoDaNoite": 2,
+          "survivorTension": 2,
+          "objectiveProgress": 2
+        }
+      },
+      {
+        "id": "shut_down_relay",
+        "label": "Desligar o repetidor e reparar com componentes limitados",
+        "detalhe": "Controlo acima de inteligencia.",
+        "consequenceTitle": "Silencio retomado",
+        "consequenceDetail": "Reestablece controlo e silencio. Perde pista de comunicacoes externas; vulneravel se alguém necessita contacto.",
+        "requisito": "nenhum",
+        "impact": {
+          "moral": 0,
+          "pressaoDaNoite": 1,
+          "survivorTension": -1,
+          "objectiveProgress": 0
+        }
+      }
+    ]
+  }
+]

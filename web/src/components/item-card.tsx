@@ -34,6 +34,7 @@ export function ItemCard({
   return (
     <article
       ref={setNodeRef}
+      data-testid={`item-card:${item.id}`}
       {...(draggable ? listeners : {})}
       {...(draggable ? attributes : {})}
       className={`relative overflow-hidden rounded-[1.6rem] border border-stone-300/35 bg-[linear-gradient(180deg,_rgba(255,248,235,0.96),_rgba(230,220,203,0.96))] text-stone-900 shadow-xl shadow-black/25 ${

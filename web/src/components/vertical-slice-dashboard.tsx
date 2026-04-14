@@ -1,13 +1,24 @@
 "use client";
 
-import { DndContext, useDroppable, type DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 
 import { BoardView } from "@/components/board-view";
 import { ItemCard } from "@/components/item-card";
+import { PartySlot } from "@/components/party-slot";
+import { SurvivorCard } from "@/components/survivor-card";
 import {
   actionDefinitions,
   rulesSections,
   turnPhases,
+  type LocationDefinition,
   type TurnPhase,
 } from "@/lib/game-data";
 import { useGameStore } from "@/stores/game-store";
@@ -17,6 +28,12 @@ const metricTone = (value: number) => {
   if (value >= 45) return "text-amber-300";
   return "text-rose-300";
 };
+
+const actionByTargetLocationId = Object.fromEntries(
+  actionDefinitions
+    .filter((action) => action.targetLocationId)
+    .map((action) => [action.targetLocationId as string, action.id]),
+) as Record<string, string>;
 
 const riskTone = {
   baixo: "border-emerald-400/40 bg-emerald-500/10 text-emerald-100",
@@ -54,6 +71,7 @@ function ShelterDropZone({
   return (
     <div
       ref={setNodeRef}
+      data-testid="shelter-dropzone"
       className={`rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
         enabled && isOver
           ? "border-amber-300/70 bg-amber-200/12"
@@ -77,6 +95,93 @@ function ShelterDropZone({
         Cartas no abrigo: {itemCount}
       </p>
     </div>
+  );
+}
+
+function ActionTargetDropZone({
+  enabled,
+  selectedLocationName,
+  selectedActionLabel,
+}: {
+  enabled: boolean;
+  selectedLocationName: string | null;
+  selectedActionLabel: string | null;
+}) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: "action-target-dropzone",
+    disabled: !enabled,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-testid="action-target-dropzone"
+      className={`rounded-[1.75rem] border border-dashed px-4 py-5 text-center transition ${
+        enabled && isOver
+          ? "border-sky-300/70 bg-sky-200/12"
+          : enabled
+            ? "border-white/15 bg-white/5"
+            : "border-white/8 bg-white/[0.03] opacity-60"
+      }`}
+    >
+      <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
+        Alvo do turno
+      </p>
+      <p className="mt-3 font-serif text-2xl text-stone-50">
+        {selectedLocationName ?? "Arrasta um local"}
+      </p>
+      <p className="mt-3 text-sm leading-7 text-stone-300/80">
+        {enabled
+          ? selectedActionLabel
+            ? `Acao selecionada: ${selectedActionLabel}`
+            : "Arrasta um local do tabuleiro para escolher rapidamente a acao."
+          : "Esta zona so fica ativa durante a fase de Acao."}
+      </p>
+    </div>
+  );
+}
+
+function LocationCard({
+  location,
+  draggable,
+}: {
+  location: LocationDefinition;
+  draggable: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `drag:location:${location.id}`,
+      disabled: !draggable,
+      data: {
+        type: "location-card",
+        locationId: location.id,
+      },
+    });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <article
+      ref={setNodeRef}
+      {...(draggable ? listeners : {})}
+      {...(draggable ? attributes : {})}
+      className={`rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-4 text-left transition ${
+        draggable ? "cursor-grab active:cursor-grabbing" : ""
+      } ${isDragging ? "opacity-70" : ""}`}
+      style={style}
+    >
+      <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
+        {location.tipo} · {location.estado} · {location.distancia}
+      </p>
+      <h4 className="mt-2 font-serif text-xl text-stone-50">{location.nome}</h4>
+      <p className="mt-2 text-sm leading-6 text-stone-300/80">
+        {location.recompensa}
+      </p>
+    </article>
   );
 }
 
@@ -166,6 +271,7 @@ export function VerticalSliceDashboard() {
     objective,
     handItems,
     shelterItems,
+    partySlots,
     events,
     log,
     selectedActionId,
@@ -177,6 +283,9 @@ export function VerticalSliceDashboard() {
     toggleRulesPanel,
     setRulesPanel,
     moveItemToShelter,
+    assignSurvivorToPartySlot,
+    removeSurvivorFromParty,
+    clearPartySlot,
     resolveSelectedAction,
     resetGame,
   } = useGameStore();
@@ -187,23 +296,88 @@ export function VerticalSliceDashboard() {
   const isActionPhase = currentPhase === "acao";
   const isCrisisPhase = currentPhase === "crise";
   const isResolutionPhase = currentPhase === "resolucao";
-  const highlightedLocationIds =
-    selectedActionId === "explore_pharmacy"
-      ? ["loc_farmacia_encosta"]
-      : selectedActionId === "fortify_gate"
-        ? ["loc_porta_norte"]
-        : selectedActionId === "investigate_tower"
-          ? ["loc_torre_observacao"]
-          : [];
+  const isPartyPhase = isPlanningPhase || isActionPhase;
+  const partyMemberIds = new Set(partySlots.filter(Boolean) as string[]);
+  const rosterSurvivors = survivors.filter(
+    (survivor) => !partyMemberIds.has(survivor.id),
+  );
+  const partySurvivors = partySlots.map((survivorId) =>
+    survivorId
+      ? survivors.find((survivor) => survivor.id === survivorId) ?? null
+      : null,
+  );
+  const { isOver: isRosterOver, setNodeRef: setRosterNodeRef } = useDroppable({
+    id: "survivor-roster",
+    disabled: !isPartyPhase,
+  });
+  const selectedActionDefinition = actionDefinitions.find(
+    (action) => action.id === selectedActionId,
+  );
+  const highlightedLocationIds = selectedActionDefinition?.targetLocationId
+    ? [selectedActionDefinition.targetLocationId]
+    : [];
+  const selectedLocationName = highlightedLocationIds[0]
+    ? locations.find((location) => location.id === highlightedLocationIds[0])?.nome ??
+      null
+    : null;
+  const selectedActionLabel = selectedActionDefinition?.label ?? null;
+  const actionableLocations = locations.filter((location) =>
+    Boolean(actionByTargetLocationId[location.id]),
+  );
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
-    if (event.over?.id === "shelter-dropzone") {
-      moveItemToShelter(String(event.active.id));
+    const activeType = event.active.data.current?.type;
+    const overId = event.over?.id ? String(event.over.id) : "";
+
+    if (activeType === "item-card") {
+      if (overId === "shelter-dropzone") {
+        moveItemToShelter(String(event.active.id));
+      }
+      return;
+    }
+
+    if (activeType === "survivor") {
+      const survivorId = String(event.active.data.current?.survivorId ?? "");
+      if (!survivorId) return;
+
+      if (overId.startsWith("party-slot:")) {
+        const slotIndex = Number(overId.split(":")[1]);
+        const fromPartySlotIndex = event.active.data.current?.fromPartySlotIndex;
+        assignSurvivorToPartySlot(
+          survivorId,
+          Number.isFinite(slotIndex) ? slotIndex : 0,
+          typeof fromPartySlotIndex === "number" ? fromPartySlotIndex : null,
+        );
+        return;
+      }
+
+      if (overId === "survivor-roster") {
+        removeSurvivorFromParty(survivorId);
+      }
+
+      return;
+    }
+
+    if (activeType === "location-card") {
+      const locationId = String(event.active.data.current?.locationId ?? "");
+      if (!locationId) return;
+
+      if (overId === "action-target-dropzone") {
+        const actionId = actionByTargetLocationId[locationId];
+        if (actionId) {
+          setSelectedAction(actionId);
+        }
+      }
+
+      return;
     }
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <button
           type="button"
@@ -388,9 +562,9 @@ export function VerticalSliceDashboard() {
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col gap-3">
-              {actionDefinitions.map((action) => {
-                const isSelected = action.id === selectedActionId;
+	            <div className="mt-6 flex flex-col gap-3">
+	              {actionDefinitions.map((action) => {
+	                const isSelected = action.id === selectedActionId;
 
                 return (
                   <button
@@ -410,7 +584,35 @@ export function VerticalSliceDashboard() {
                     </span>
                   </button>
                 );
-              })}
+	              })}
+	            </div>
+
+	            <div className="mt-6">
+	              <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
+	                Locais disponiveis
+	              </p>
+	              <p className="mt-2 text-sm leading-7 text-stone-300/80">
+	                {isActionPhase
+	                  ? "Arrasta um local para a zona de alvo para selecionar a acao."
+	                  : "Drag de locais fica ativo durante a fase de Acao."}
+	              </p>
+	              <div className="mt-4 grid gap-3">
+	                {actionableLocations.map((location) => (
+	                  <LocationCard
+	                    key={location.id}
+	                    location={location}
+	                    draggable={isActionPhase}
+	                  />
+	                ))}
+	              </div>
+	            </div>
+
+	            <div className="mt-6">
+	              <ActionTargetDropZone
+	                enabled={isActionPhase}
+	                selectedLocationName={selectedLocationName}
+                selectedActionLabel={selectedActionLabel}
+              />
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -438,6 +640,14 @@ export function VerticalSliceDashboard() {
           shelterName={shelter.nome}
           survivors={survivors}
           highlightedLocationIds={highlightedLocationIds}
+          isActionPhase={isActionPhase}
+          selectableLocationIds={Object.keys(actionByTargetLocationId)}
+          onLocationSelect={(locationId) => {
+            const actionId = actionByTargetLocationId[locationId];
+            if (actionId) {
+              setSelectedAction(actionId);
+            }
+          }}
         />
 
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -457,47 +667,68 @@ export function VerticalSliceDashboard() {
               </p>
             </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {survivors.map((survivor) => (
-              <article
-                key={survivor.id}
-                className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,_rgba(255,255,255,0.06),_rgba(255,255,255,0.02))] p-5"
+            <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+              <div
+                ref={setRosterNodeRef}
+                className={`rounded-[1.75rem] border p-4 transition ${
+                  isPartyPhase && isRosterOver
+                    ? "border-amber-300/70 bg-amber-200/10"
+                    : "border-white/8 bg-white/[0.03]"
+                }`}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-end justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-                      {survivor.papel}
+                      Abrigo
                     </p>
-                    <h3 className="mt-2 font-serif text-2xl text-stone-50">
-                      {survivor.nome}
-                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-stone-300/80">
+                      {isPartyPhase
+                        ? "Arrasta sobreviventes para slots da equipa. Para remover da equipa, larga aqui."
+                        : "Gestao de equipa desbloqueia em Planeamento e Acao."}
+                    </p>
                   </div>
-                  <div className="h-14 w-14 rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_35%_30%,_rgba(255,236,201,0.25),_transparent_35%),linear-gradient(135deg,_rgba(117,60,40,0.95),_rgba(39,25,21,0.95))]" />
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
+                    Disponiveis: {rosterSurvivors.length}
+                  </p>
                 </div>
 
-                <p className="mt-4 text-sm leading-7 text-stone-300/80">
-                  {survivor.estado}
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  {rosterSurvivors.map((survivor) => (
+                    <SurvivorCard
+                      key={survivor.id}
+                      survivor={survivor}
+                      draggable={isPartyPhase}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <aside className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
+                  Equipa do turno
+                </p>
+                <h3 className="mt-2 font-serif text-2xl text-stone-50">
+                  Party / Slots
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-stone-300/80">
+                  {isPartyPhase
+                    ? "Define quem sai do abrigo. Slots suportam troca por drag and drop."
+                    : "Bloqueado nesta fase."}
                 </p>
 
-                <div className="mt-5 flex items-center justify-between text-sm">
-                  <span className="text-stone-400">Habilidade</span>
-                  <span className="text-stone-100">{survivor.habilidade}</span>
-                </div>
-                <div className="mt-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-stone-400">Tensao</span>
-                    <span className="text-stone-100">{survivor.tensao}%</span>
-                  </div>
-                  <div className="mt-2 h-2 rounded-full bg-white/10">
-                    <div
-                      className="h-2 rounded-full bg-[linear-gradient(90deg,_#d97706,_#fb7185)]"
-                      style={{ width: `${survivor.tensao}%` }}
+                <div className="mt-4 grid gap-3">
+                  {partySurvivors.map((occupant, index) => (
+                    <PartySlot
+                      key={`party_slot_${index}`}
+                      slotIndex={index}
+                      enabled={isPartyPhase}
+                      occupant={occupant}
+                      onClear={() => clearPartySlot(index)}
                     />
-                  </div>
+                  ))}
                 </div>
-              </article>
-            ))}
-          </div>
+              </aside>
+            </div>
         </div>
 
         <div className="grid gap-4">
@@ -518,7 +749,10 @@ export function VerticalSliceDashboard() {
                 <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
                   Mao atual
                 </p>
-                <div className="mt-4 flex flex-wrap gap-4">
+                <div
+                  className="mt-4 flex flex-wrap gap-4"
+                  data-testid="hand-items"
+                >
                   {handItems.map((item) => (
                     <ItemCard
                       key={item.id}
@@ -550,7 +784,10 @@ export function VerticalSliceDashboard() {
                     <p className="mt-6 text-xs uppercase tracking-[0.28em] text-stone-500">
                       Cartas largadas
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-4">
+                    <div
+                      className="mt-4 flex flex-wrap gap-4"
+                      data-testid="shelter-items"
+                    >
                       {shelterItems.map((item) => (
                         <ItemCard
                           key={`shelter_${item.id}`}

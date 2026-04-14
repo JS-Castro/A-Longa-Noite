@@ -41,19 +41,20 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - regras consultaveis a qualquer momento integradas na UI
 - interacoes do turno agora bloqueadas por fase
 - infraestrutura E2E com Playwright integrada na webapp
+- board interativo: clicar num local durante fase de Acao seleciona a acao correspondente
+- drag and drop de localizacoes: locais do board agora podem ser arrastados para uma zona de alvo do turno para escolher acao
+- 2 sobreviventes adicionados (Leonor Vilar e Duarte Caeiro), colonia agora com 6 membros
+- gestao de equipa: roster + party slots com drag and drop (swap, remover, bloqueado por fase)
+- 3 eventos novos integrados do markdown: Sopa Racionada, Farmacia Afundada, Vozes no Nevoeiro
+- cobertura E2E expandida: drag de cartas para abrigo + selecao de local no tabuleiro por fase
+- 6 eventos novos escritos em markdown (abrigo + exploracao) adicionados a `content/narrative/events/`
 
 ## Em Curso
 
-- expandir conteudo concreto do vertical slice
-- transformar markdown de conteudo em dados consumiveis pela app
-- definir a proxima camada do loop jogavel
-- introduzir locais exploraveis e objetivo principal real
-- aproximar dados de jogo de formatos estruturados reaproveitaveis
-- usar o board para selecao e interacao direta com localizacoes
-- ligar cartas a inventario e loot do turno
-- usar drag and drop tambem para localizacoes e sobreviventes
 - aprofundar o comportamento das regras e consequencias por fase
-- expandir a cobertura E2E para drag and drop, board e fluxo de cartas
+- expandir conteudo: de 6 para 12+ eventos, objetivos pessoais por sobrevivente
+- ligar party slots a efeitos de resolucao (risco, tensao, loot por membro)
+- ligar selecao de local (target) a validacao na engine (acao <-> local)
 
 ## Proximo
 
@@ -65,7 +66,7 @@ Sprint atual: definicao do projeto e preparacao da base documental
 
 ## Bloqueios
 
-- nenhum bloqueio tecnico neste momento
+- Playwright E2E pode falhar em ambientes sandbox sem acesso a loopback (erro `connect EPERM 127.0.0.1:3100`)
 
 ## Decisoes Tomadas
 
@@ -93,6 +94,21 @@ Sprint atual: definicao do projeto e preparacao da base documental
 5. Preparar prompts/agentes por area.
 
 ## Log
+
+### 2026-04-14
+
+- board interativo: locais clicaveis durante fase de Acao para selecionar a acao do turno
+- drag and drop de localizacoes: locais do tabuleiro agora podem ser arrastados para escolher acao do turno
+- colonia expandida para 6 sobreviventes com Leonor Vilar e Duarte Caeiro
+- party slots: roster + equipa do turno com drag and drop, swap e remover
+- 3 eventos do markdown integrados na app (Sopa Racionada, Farmacia Afundada, Vozes no Nevoeiro)
+- 6 eventos novos escritos em markdown (abrigo + exploracao) adicionados a `content/narrative/events/`
+- queue de eventos passa de 3 para 6 entradas
+- condicoes de vitoria e derrota implementadas (moral 0, mantimentos 0, pressao 100, objetivo completo)
+- sistema de loot por acao: cada acao pode gerar uma carta nova na mao do jogador
+- itens expandidos de 3 para 12 (antibioticos, vendas, combustivel, fio eletrico, racao, sinalizador, documentos, manta termica)
+- ecra de fim de jogo com estado, turnos sobrevividos e opcao de reiniciar
+- E2E: testes novos para drag cartas -> abrigo e selecao de local no tabuleiro por fase
 
 ### 2026-04-09
 

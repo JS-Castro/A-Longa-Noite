@@ -1,0 +1,46 @@
+[
+  {
+    "id": "loc_farmacia_encosta",
+    "nome": "Farmacia da Encosta",
+    "tipo": "saque",
+    "estado": "instavel",
+    "distancia": "20 min",
+    "recompensa": "medicamentos e material medico",
+    "descricao": "Uma farmacia de aldeia enterrada em neve. As prateleiras foram saqueadas, mas as areas mais profundas ainda podem guardar tesouro.",
+    "risco": "medio",
+    "tags": ["medicina", "saque"]
+  },
+  {
+    "id": "loc_torre_observacao",
+    "nome": "Torre de Observacao",
+    "tipo": "risco",
+    "estado": "instavel",
+    "distancia": "5 min",
+    "recompensa": "informacao sobre a serra",
+    "descricao": "Uma estrutura de madeira antiga, com vista sobre toda a extensao. Mas nos ultimos dias, algo estranho aconteceu la dentro.",
+    "risco": "medio-alto",
+    "tags": ["informacao", "misterio"]
+  },
+  {
+    "id": "loc_capela_velha",
+    "nome": "Capela da Estrada Velha",
+    "tipo": "faccao",
+    "estado": "hostil",
+    "distancia": "35 min",
+    "recompensa": "contato, abrigo secundario ou conflito",
+    "descricao": "Uma capela de estrada em ruinas, mas uma fonte de calor recente sugere habitacao. Os moradores sao desconhecidos.",
+    "risco": "alto",
+    "tags": ["faccao", "emboscada", "abrigo-secundario"]
+  },
+  {
+    "id": "loc_porta_norte",
+    "nome": "Porta Norte",
+    "tipo": "abrigo",
+    "estado": "instavel",
+    "distancia": "0 min",
+    "recompensa": "tempo e defesa do abrigo",
+    "descricao": "Entrada principal da Estacao Vaga-Lume. Reforca-la e uma responsabilidade constante.",
+    "risco": "baixo",
+    "tags": ["defesa", "abrigo"]
+  }
+]

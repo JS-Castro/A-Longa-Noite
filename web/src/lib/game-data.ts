@@ -25,6 +25,7 @@ export type ActionDefinition = {
   label: string;
   resumo: string;
   allowedPhase: TurnPhase;
+  targetLocationId?: string;
 };
 
 export type LocationDefinition = {
@@ -103,14 +104,19 @@ export type RulesSection = {
   items: string[];
 };
 
+export type GameStatus = "playing" | "victory" | "defeat";
+
 export type GameState = {
   turno: number;
   currentPhase: TurnPhase;
+  gameStatus: GameStatus;
+  defeatReason: string | null;
   shelter: ShelterState;
   survivors: SurvivorSummary[];
   locations: LocationDefinition[];
   objective: ObjectiveState;
   itemDeck: ItemCardData[];
+  pendingLoot: ItemCardData[];
   events: EventDefinition[];
   selectedActionId: string;
   selectedChoiceId: string | null;
@@ -127,75 +133,75 @@ export const shelterState: ShelterState = {
   ameacaExterior: "Ermos avistados na encosta norte",
 };
 
-export const activeSurvivors: SurvivorSummary[] = [
-  {
-    id: "survivor_alma_macedo",
-    nome: "Alma Macedo",
-    papel: "Enfermaria",
-    estado: "Exausta, mas estavel",
-    habilidade: "Mao Firme",
-    tensao: 34,
-  },
-  {
-    id: "survivor_tomas_barradas",
-    nome: "Tomas Barradas",
-    papel: "Gerador",
-    estado: "Em manutencao continua",
-    habilidade: "Desenrascanço",
-    tensao: 27,
-  },
-  {
-    id: "survivor_ines_seixo",
-    nome: "Ines Seixo",
-    papel: "Radio e exploracao",
-    estado: "Obcecada com um sinal",
-    habilidade: "Escuta Longa",
-    tensao: 52,
-  },
-  {
-    id: "survivor_roque_vale",
-    nome: "Roque Vale",
-    papel: "Rondas",
-    estado: "Em alerta agressivo",
-    habilidade: "Linha Dura",
-    tensao: 46,
-  },
-];
+import charactersData from "@/data/characters.json";
+import eventsData from "@/data/events.json";
+import itemsData from "@/data/items.json";
+import locationsData from "@/data/locations.json";
 
-export const locations: LocationDefinition[] = [
-  {
-    id: "loc_farmacia_encosta",
-    nome: "Farmacia da Encosta",
-    tipo: "saque",
-    estado: "instavel",
-    distancia: "20 min",
-    recompensa: "medicamentos e material medico",
-  },
-  {
-    id: "loc_torre_observacao",
-    nome: "Torre de Observacao",
-    tipo: "risco",
-    estado: "instavel",
-    distancia: "5 min",
-    recompensa: "informacao sobre a serra",
-  },
-  {
-    id: "loc_capela_velha",
-    nome: "Capela da Estrada Velha",
-    tipo: "facção",
-    estado: "hostil",
-    distancia: "35 min",
-    recompensa: "contato, abrigo secundario ou conflito",
-  },
-  {
-    id: "loc_porta_norte",
-    nome: "Porta Norte",
-    tipo: "abrigo",
-    estado: "instavel",
-    distancia: "0 min",
-    recompensa: "tempo e defesa do abrigo",
-  },
-];
+type CharacterJson = {
+  id: string;
+  nome: string;
+  papel: string;
+  habilidade: string;
+};
+
+type LocationJson = {
+  id: string;
+  nome: string;
+  tipo: LocationDefinition["tipo"];
+  estado: LocationDefinition["estado"];
+  distancia: string;
+  recompensa: string;
+};
+
+type EventChoiceJson = {
+  id: string;
+  label: string;
+  detalhe: string;
+  consequenceTitle: string;
+  consequenceDetail: string;
+  impact: EventChoiceImpact;
+};
+
+type EventJson = {
+  id: string;
+  titulo: string;
+  local: string;
+  texto: string;
+  risco: RiskLevel;
+  choices: EventChoiceJson[];
+};
+
+const characterStates: Record<string, { estado: string; tensao: number }> = {
+  survivor_alma_macedo: { estado: "Exausta, mas estavel", tensao: 34 },
+  survivor_tomas_barradas: { estado: "Em manutencao continua", tensao: 27 },
+  survivor_ines_seixo: { estado: "Obcecada com um sinal", tensao: 52 },
+  survivor_roque_vale: { estado: "Em alerta agressivo", tensao: 46 },
+  survivor_leonor_vilar: { estado: "Pronta para sair", tensao: 18 },
+  survivor_duarte_caeiro: { estado: "A registar tudo", tensao: 41 },
+};
+
+export const activeSurvivors: SurvivorSummary[] = (charactersData as CharacterJson[]).map(
+  (char) => ({
+    id: char.id,
+    nome: char.nome,
+    papel: char.papel,
+    estado: characterStates[char.id]?.estado || "Desconhecido",
+    habilidade: char.habilidade,
+    tensao: characterStates[char.id]?.tensao || 0,
+  }),
+);
+
+export const locations: LocationDefinition[] = (locationsData as LocationJson[]).map(
+  (loc) => ({
+    id: loc.id,
+    nome: loc.nome,
+    tipo: loc.tipo,
+    estado: loc.estado,
+    distancia: loc.distancia,
+    recompensa: loc.recompensa,
+  }),
+);
 
 export const mainObjective: ObjectiveState = {
   titulo: "Segurar a Estacao Ate ao Amanhecer de Emergencia",
@@ -205,159 +211,38 @@ export const mainObjective: ObjectiveState = {
   alvo: 6,
 };
 
+export const allItems: ItemCardData[] = itemsData as ItemCardData[];
+
 export const itemDeck: ItemCardData[] = [
-  {
-    id: "item_mantimentos_enlatados",
-    nome: "Mantimentos Enlatados",
-    quantidade: 2,
-    efeito: "Adicionar 2 unidades de comida ao abrigo.",
-    origem: "Farmacia da Encosta",
-    categoria: "mantimentos",
-    flavor: "Ferrugem por fora, alivio por dentro.",
-    accent: "#b45309",
-  },
-  {
-    id: "item_kit_medico",
-    nome: "Kit Medico Improvisado",
-    quantidade: 1,
-    efeito: "Reduz o impacto de um ferimento ou crise medica.",
-    origem: "Enfermaria da colonia",
-    categoria: "medico",
-    flavor: "Nada disto inspira confianca. Tudo isto pode salvar uma vida.",
-    accent: "#0f766e",
-  },
-  {
-    id: "item_cartuchos",
-    nome: "Cartuchos Recuperados",
-    quantidade: 3,
-    efeito: "Permitem defesa armada em encontros de alto risco.",
-    origem: "Porta Norte",
-    categoria: "municao",
-    flavor: "Poucos, frios e demasiado valiosos para desperdiçar.",
-    accent: "#7f1d1d",
-  },
+  allItems[0],
+  allItems[1],
+  allItems[2],
 ];
 
-export const eventQueue: EventDefinition[] = [
-  {
-    id: "shelter_broken_wire",
-    titulo: "O Fio no Gerador",
-    local: "Sala das maquinas",
-    texto:
-      "Um cabo queimado pode deitar abaixo o aquecimento durante a noite. Tomas quer agir ja. O abrigo nao tem margem para outro erro.",
-    risco: "medio",
-    choices: [
-      {
-        id: "repair_now",
-        label: "Reparar ja",
-        detalhe: "Gasta combustivel e folego para estabilizar o aquecimento antes da noite cair.",
-        consequenceTitle: "Gerador estabilizado",
-        consequenceDetail:
-          "A equipa resolveu o problema antes do pior frio. O abrigo gastou recursos, mas a moral segurou-se.",
-        impact: {
-          combustivel: -1,
-          moral: 2,
-          pressaoDaNoite: -6,
-          survivorTension: 2,
-          objectiveProgress: 1,
-        },
-      },
-      {
-        id: "patch_temp",
-        label: "Fazer remendo temporario",
-        detalhe: "Poupa combustivel agora, mas arrisca deixar a colonia vulneravel durante a madrugada.",
-        consequenceTitle: "Remendo inseguro",
-        consequenceDetail:
-          "O sistema voltou a trabalhar, mas os estalidos no gerador fizeram crescer o medo de uma falha pior.",
-        impact: {
-          combustivel: 0,
-          moral: -1,
-          pressaoDaNoite: 5,
-          survivorTension: 4,
-        },
-      },
-    ],
-  },
-  {
-    id: "shelter_steps_tower",
-    titulo: "Passos na Torre",
-    local: "Torre de observacao",
-    texto:
-      "Uma vigia ouviu passos num sitio fechado por dentro. Se for so medo, o rumor alastra. Se nao for, ha algo pior no abrigo.",
-    risco: "medio-alto",
-    choices: [
-      {
-        id: "search_tower",
-        label: "Subir e investigar",
-        detalhe: "Uma ronda curta, nervosa e silenciosa tenta encontrar a origem do barulho.",
-        consequenceTitle: "Sinais na estrutura",
-        consequenceDetail:
-          "A torre nao revelou um intruso, mas ha marcas frescas na escada e o mistério pesa sobre todos.",
-        impact: {
-          moral: -2,
-          pressaoDaNoite: -3,
-          survivorTension: 6,
-          ameacaExterior: "Ruido estranho detetado junto da torre",
-          secureLocationId: "loc_torre_observacao",
-          objectiveProgress: 1,
-        },
-      },
-      {
-        id: "seal_tower",
-        label: "Fechar a torre",
-        detalhe: "A prioridade passa a ser conter o rumor e impedir rondas isoladas até haver mais certezas.",
-        consequenceTitle: "Silencio imposto",
-        consequenceDetail:
-          "A torre foi selada. A colonia ganhou tempo, mas alguns sobreviventes sentem que algo importante ficou por descobrir.",
-        impact: {
-          moral: -1,
-          pressaoDaNoite: -1,
-          survivorTension: 2,
-          secureLocationId: "loc_torre_observacao",
-        },
-      },
-    ],
-  },
-  {
-    id: "explore_fire_chapel",
-    titulo: "Fogo na Capela",
-    local: "Estrada velha",
-    texto:
-      "Uma luz viva aparece num ponto que devia estar abandonado. Pode ser ajuda, armadilha ou oportunidade rara.",
-    risco: "alto",
-    choices: [
-      {
-        id: "observe_first",
-        label: "Observar primeiro",
-        detalhe: "A equipa mantém distância e tenta perceber quem está no interior antes de agir.",
-        consequenceTitle: "Contacto evitado",
-        consequenceDetail:
-          "O abrigo não ganhou novos aliados, mas também evitou uma emboscada precipitada na neve.",
-        impact: {
-          moral: 1,
-          pressaoDaNoite: -2,
-          survivorTension: 1,
-          objectiveProgress: 1,
-        },
-      },
-      {
-        id: "enter_fast",
-        label: "Entrar de rompante",
-        detalhe: "Aposta-se na iniciativa e na força para reclamar o espaço antes que o perigo reaja.",
-        consequenceTitle: "Confronto na capela",
-        consequenceDetail:
-          "O grupo encontrou recursos, mas o barulho trouxe atenção indesejada e deixou a equipa mais tensa.",
-        impact: {
-          mantimentos: 1,
-          moral: -1,
-          pressaoDaNoite: 4,
-          survivorTension: 5,
-          secureLocationId: "loc_capela_velha",
-        },
-      },
-    ],
-  },
-];
+export const lootByAction: Record<string, string[]> = {
+  explore_pharmacy: ["item_antibioticos", "item_vendas_estereis", "item_mantimentos_enlatados"],
+  fortify_gate: ["item_garrafa_combustivel", "item_fio_eletrico"],
+  investigate_tower: ["item_documentos_estranhos", "item_sinalizador"],
+  ration_transparency: ["item_racao_emergencia", "item_manta_termica"],
+};
+
+export const eventQueue: EventDefinition[] = (eventsData as EventJson[]).map(
+  (event) => ({
+    id: event.id,
+    titulo: event.titulo,
+    local: event.local,
+    texto: event.texto,
+    risco: event.risco,
+    choices: event.choices.map((choice) => ({
+      id: choice.id,
+      label: choice.label,
+      detalhe: choice.detalhe,
+      consequenceTitle: choice.consequenceTitle,
+      consequenceDetail: choice.consequenceDetail,
+      impact: choice.impact,
+    })),
+  }),
+);
 
 export const actionDefinitions: ActionDefinition[] = [
   {
@@ -365,12 +250,14 @@ export const actionDefinitions: ActionDefinition[] = [
     label: "Explorar a farmacia da encosta",
     resumo: "Procura medicamentos e mantimentos medicos, mas alonga a exposicao ao frio.",
     allowedPhase: "acao",
+    targetLocationId: "loc_farmacia_encosta",
   },
   {
     id: "fortify_gate",
     label: "Reforcar a porta norte",
     resumo: "Baixa a pressao exterior e compra tempo, mas custa combustivel e foco.",
     allowedPhase: "acao",
+    targetLocationId: "loc_porta_norte",
   },
   {
     id: "ration_transparency",
@@ -383,6 +270,7 @@ export const actionDefinitions: ActionDefinition[] = [
     label: "Investigar a torre antes do amanhecer",
     resumo: "Pode revelar pistas sobre o Silencio Branco, com risco alto para a equipa.",
     allowedPhase: "acao",
+    targetLocationId: "loc_torre_observacao",
   },
 ];
 
@@ -468,6 +356,9 @@ export const rulesSections: RulesSection[] = [
 export const initialGameState: GameState = {
   turno: 1,
   currentPhase: "crise",
+  gameStatus: "playing",
+  defeatReason: null,
+  pendingLoot: [],
   shelter: shelterState,
   survivors: activeSurvivors,
   locations,
@@ -486,3 +377,6 @@ export const initialGameState: GameState = {
     },
   ],
 };
+
+// Re-export game logic functions
+export { applyChoiceImpact, validateGameState } from "./game-logic";

@@ -1,5 +1,7 @@
 "use client";
 
+import { useDraggable } from "@dnd-kit/core";
+
 import type { LocationDefinition, SurvivorSummary } from "@/lib/game-data";
 
 type BoardViewProps = {
@@ -7,7 +9,97 @@ type BoardViewProps = {
   shelterName: string;
   survivors: SurvivorSummary[];
   highlightedLocationIds?: string[];
+  isActionPhase?: boolean;
+  selectableLocationIds?: string[];
+  onLocationSelect?: (locationId: string) => void;
 };
+
+function BoardLocationNode({
+  location,
+  highlighted,
+  selectable,
+  draggable,
+  position,
+  onSelect,
+}: {
+  location: LocationDefinition;
+  highlighted: boolean;
+  selectable: boolean;
+  draggable: boolean;
+  position: { left: string; top: string };
+  onSelect?: (locationId: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `drag:location:${location.id}`,
+      disabled: !draggable,
+      data: {
+        type: "location-card",
+        locationId: location.id,
+      },
+    });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  const inner = (
+    <div
+      className={`rounded-[1.6rem] border p-4 shadow-xl shadow-black/20 transition ${stateTone[location.estado]} ${
+        highlighted ? "ring-2 ring-amber-300/60" : ""
+      } ${selectable ? "hover:ring-2 hover:ring-sky-300/50" : ""} ${
+        draggable ? "cursor-grab active:cursor-grabbing" : ""
+      } ${isDragging ? "opacity-70" : ""}`}
+    >
+      <p className="text-[0.65rem] uppercase tracking-[0.24em] opacity-70">
+        {location.distancia}
+      </p>
+      <h3 className="mt-2 font-serif text-xl">{location.nome}</h3>
+      <p className="mt-3 text-[0.72rem] uppercase tracking-[0.22em] opacity-70">
+        {location.tipo}
+      </p>
+      <p className="mt-3 text-sm leading-6 opacity-90">
+        {location.recompensa}
+      </p>
+      {selectable ? (
+        <p className="mt-3 text-[0.65rem] uppercase tracking-[0.22em] text-sky-200/70">
+          Clica para selecionar
+        </p>
+      ) : null}
+      {draggable ? (
+        <p className="mt-3 text-[0.65rem] uppercase tracking-[0.22em] text-stone-200/60">
+          Arrasta para o alvo
+        </p>
+      ) : null}
+    </div>
+  );
+
+  const common = {
+    ref: setNodeRef,
+    ...(draggable ? listeners : {}),
+    ...(draggable ? attributes : {}),
+    className: "absolute w-[13rem] -translate-x-1/2 -translate-y-1/2 text-left",
+    style: { left: position.left, top: position.top, ...style },
+    "data-testid": `board-location:${location.id}`,
+    "data-location-id": location.id,
+  } as const;
+
+  return selectable ? (
+    <button
+      {...common}
+      type="button"
+      onClick={() => onSelect?.(location.id)}
+      aria-pressed={highlighted}
+      aria-label={`Selecionar ${location.nome}`}
+    >
+      {inner}
+    </button>
+  ) : (
+    <article {...common}>{inner}</article>
+  );
+}
 
 const locationPositions: Record<
   string,
@@ -58,6 +150,8 @@ const chipPositions = [
   { left: "46%", top: "66%" },
   { left: "55%", top: "66%" },
   { left: "62%", top: "58%" },
+  { left: "39%", top: "42%" },
+  { left: "62%", top: "42%" },
 ];
 
 export function BoardView({
@@ -65,6 +159,9 @@ export function BoardView({
   shelterName,
   survivors,
   highlightedLocationIds = [],
+  isActionPhase = false,
+  selectableLocationIds = [],
+  onLocationSelect,
 }: BoardViewProps) {
   return (
     <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(160deg,_rgba(18,24,31,0.98),_rgba(10,13,18,0.98))] p-6 shadow-xl shadow-black/20">
@@ -78,8 +175,9 @@ export function BoardView({
           </h2>
         </div>
         <p className="max-w-sm text-right text-sm leading-6 text-stone-400">
-          Primeira versao visual do board: abrigo central, rotas e locais
-          relevantes do turno.
+          {isActionPhase
+            ? "Clica num local para o selecionar como alvo do turno."
+            : "Abrigo central, rotas e locais relevantes do turno."}
         </p>
       </div>
 
@@ -152,30 +250,18 @@ export function BoardView({
           if (!position) return null;
 
           const isHighlighted = highlightedLocationIds.includes(location.id);
+          const isSelectable = isActionPhase && selectableLocationIds.includes(location.id);
 
           return (
-            <article
+            <BoardLocationNode
               key={location.id}
-              className="absolute w-[13rem] -translate-x-1/2 -translate-y-1/2"
-              style={{ left: position.left, top: position.top }}
-            >
-              <div
-                className={`rounded-[1.6rem] border p-4 shadow-xl shadow-black/20 ${stateTone[location.estado]} ${
-                  isHighlighted ? "ring-2 ring-amber-300/60" : ""
-                }`}
-              >
-                <p className="text-[0.65rem] uppercase tracking-[0.24em] opacity-70">
-                  {location.distancia}
-                </p>
-                <h3 className="mt-2 font-serif text-xl">{location.nome}</h3>
-                <p className="mt-3 text-[0.72rem] uppercase tracking-[0.22em] opacity-70">
-                  {location.tipo}
-                </p>
-                <p className="mt-3 text-sm leading-6 opacity-90">
-                  {location.recompensa}
-                </p>
-              </div>
-            </article>
+              location={location}
+              highlighted={isHighlighted}
+              selectable={isSelectable}
+              draggable={isActionPhase}
+              position={position}
+              onSelect={onLocationSelect}
+            />
           );
         })}
       </div>

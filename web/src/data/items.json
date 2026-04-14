@@ -1,0 +1,112 @@
+[
+  {
+    "id": "item_mantimentos_enlatados",
+    "nome": "Mantimentos Enlatados",
+    "quantidade": 2,
+    "efeito": "Adicionar 2 unidades de comida ao abrigo.",
+    "origem": "Farmacia da Encosta",
+    "categoria": "mantimentos",
+    "flavor": "Ferrugem por fora, alivio por dentro.",
+    "accent": "#b45309"
+  },
+  {
+    "id": "item_kit_medico",
+    "nome": "Kit Medico Improvisado",
+    "quantidade": 1,
+    "efeito": "Reduz o impacto de um ferimento ou crise medica.",
+    "origem": "Enfermaria da colonia",
+    "categoria": "medico",
+    "flavor": "Nada disto inspira confianca. Tudo isto pode salvar uma vida.",
+    "accent": "#0f766e"
+  },
+  {
+    "id": "item_cartuchos",
+    "nome": "Cartuchos Recuperados",
+    "quantidade": 3,
+    "efeito": "Permitem defesa armada em encontros de alto risco.",
+    "origem": "Porta Norte",
+    "categoria": "municao",
+    "flavor": "Poucos, frios e demasiado valiosos para desperdiçar.",
+    "accent": "#7f1d1d"
+  },
+  {
+    "id": "item_antibioticos",
+    "nome": "Antibioticos Vencidos",
+    "quantidade": 1,
+    "efeito": "Travar infeção ou adiar agravamento critico.",
+    "origem": "Farmacia da Encosta",
+    "categoria": "medico",
+    "flavor": "A data de validade ja passou. O frio pode ter ajudado.",
+    "accent": "#0f766e"
+  },
+  {
+    "id": "item_vendas_estereis",
+    "nome": "Vendas Estereis",
+    "quantidade": 2,
+    "efeito": "Estabilizar um ferimento antes de transporte.",
+    "origem": "Farmacia da Encosta",
+    "categoria": "medico",
+    "flavor": "Embrulhadas em plastico que o humido ainda nao venceu.",
+    "accent": "#0f766e"
+  },
+  {
+    "id": "item_garrafa_combustivel",
+    "nome": "Garrafa de Combustivel",
+    "quantidade": 1,
+    "efeito": "Adicionar 2 unidades de combustivel ao gerador.",
+    "origem": "Porta Norte",
+    "categoria": "ferramenta",
+    "flavor": "Pesada, inflamavel e absolutamente indispensavel.",
+    "accent": "#78350f"
+  },
+  {
+    "id": "item_fio_eletrico",
+    "nome": "Fio Eletrico",
+    "quantidade": 1,
+    "efeito": "Reparar avaria eletrica sem gastar combustivel.",
+    "origem": "Sala das maquinas",
+    "categoria": "ferramenta",
+    "flavor": "Tomas ja o usou tres vezes. Esta na hora de o usar uma quarta.",
+    "accent": "#78350f"
+  },
+  {
+    "id": "item_racao_emergencia",
+    "nome": "Racao de Emergencia",
+    "quantidade": 1,
+    "efeito": "Adicionar 1 unidade de comida com custo de moral minimo.",
+    "origem": "Deposito da estacao",
+    "categoria": "mantimentos",
+    "flavor": "Sabe a plastico. Nao ha queixas.",
+    "accent": "#b45309"
+  },
+  {
+    "id": "item_sinalizador",
+    "nome": "Sinalizador de Fumo",
+    "quantidade": 1,
+    "efeito": "Baixar pressao da noite ao atrair atencao para longe do abrigo.",
+    "origem": "Torre de Observacao",
+    "categoria": "municao",
+    "flavor": "Uma aposta. Pode afastar os Ermos ou revelar a posicao do abrigo.",
+    "accent": "#7f1d1d"
+  },
+  {
+    "id": "item_documentos_estranhos",
+    "nome": "Documentos da Torre",
+    "quantidade": 1,
+    "efeito": "Revelar pista narrativa. Reduz pressao da noite.",
+    "origem": "Torre de Observacao",
+    "categoria": "ferramenta",
+    "flavor": "Escrita pequena, mapas parciais e uma data que nao bate certo.",
+    "accent": "#1e3a5f"
+  },
+  {
+    "id": "item_manta_termica",
+    "nome": "Manta Termica",
+    "quantidade": 2,
+    "efeito": "Reduz tensao de um sobrevivente e baixa risco de hipotermia.",
+    "origem": "Enfermaria da colonia",
+    "categoria": "ferramenta",
+    "flavor": "Cobre dourado e barulhento. Toda a gente odeia. Toda a gente precisa.",
+    "accent": "#78350f"
+  }
+]
