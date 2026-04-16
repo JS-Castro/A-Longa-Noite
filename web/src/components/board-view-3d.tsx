@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html, Line, useGLTF } from "@react-three/drei";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, Suspense } from "react";
 import * as THREE from "three";
 import type { LocationDefinition, SurvivorSummary, ItemCardData } from "@/lib/game-data";
 
@@ -606,12 +606,15 @@ function Scene({
       <Forest />
       <Snow />
 
-      <ShelterTile name={shelterName} />
+      <Suspense fallback={null}>
+        <ShelterTile name={shelterName} />
+        {locations.map((loc) => (
+          <LocationTile key={loc.id} location={loc} highlighted={highlightedLocationIds.includes(loc.id)} />
+        ))}
+      </Suspense>
+
       {survivors.slice(0, 4).map((s, i) => (
         <SurvivorToken key={s.id} survivor={s} index={i} />
-      ))}
-      {locations.map((loc) => (
-        <LocationTile key={loc.id} location={loc} highlighted={highlightedLocationIds.includes(loc.id)} />
       ))}
 
       <OrbitControls
