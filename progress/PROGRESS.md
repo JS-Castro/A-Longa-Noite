@@ -56,6 +56,21 @@ Sprint atual: definicao do projeto e preparacao da base documental
 - ligar party slots a efeitos de resolucao (risco, tensao, loot por membro)
 - ligar selecao de local (target) a validacao na engine (acao <-> local)
 
+### Tabuleiro 3D Interativo
+
+- [ ] tabuleiro 3D com perspectiva isometrica (Three.js ou CSS 3D)
+- [ ] controlos de camara: zoom (scroll), pan (drag fundo), rotacao de perspectiva
+- [ ] drag and drop de cartas dentro do espaco 3D com snap para zonas validas
+- [ ] fundo atmosferico tematico: neve, nevoa noturna, silhuetas de pinheiros na encosta, ceu negro de inverno
+- [ ] zona de jogador visivel à volta do tabuleiro com cartas de mao e recursos
+
+### Multiplayer (fase futura)
+
+- [ ] cada jogador tem a sua zona à volta do tabuleiro (inspirado em board game fisico na mesa)
+- [ ] perspectiva rotativa por jogador: cada um ve o tabuleiro do seu lado
+- [ ] cartas de mao privadas por jogador, visiveis apenas ao proprio
+- [ ] indicacao visual de qual o lado de cada jogador na mesa digital
+
 ## Proximo
 
 - definir papeis de agentes/developers

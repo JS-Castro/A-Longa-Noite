@@ -10,7 +10,12 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 
-import { BoardView } from "@/components/board-view";
+import dynamic from "next/dynamic";
+
+const BoardView3D = dynamic(
+  () => import("@/components/board-view-3d").then((m) => ({ default: m.BoardView3D })),
+  { ssr: false }
+);
 import { ItemCard } from "@/components/item-card";
 import { PartySlot } from "@/components/party-slot";
 import { SurvivorCard } from "@/components/survivor-card";
@@ -635,7 +640,7 @@ export function VerticalSliceDashboard() {
           </aside>
         </section>
 
-        <BoardView
+        <BoardView3D
           locations={locations}
           shelterName={shelter.nome}
           survivors={survivors}
@@ -648,6 +653,8 @@ export function VerticalSliceDashboard() {
               setSelectedAction(actionId);
             }
           }}
+          playerItems={handItems}
+          playerName="Jogador 1"
         />
 
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
