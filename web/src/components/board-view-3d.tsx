@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Html, Line } from "@react-three/drei";
+import { OrbitControls, Html, Line, useGLTF } from "@react-three/drei";
 import { useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import type { LocationDefinition, SurvivorSummary, ItemCardData } from "@/lib/game-data";
@@ -166,46 +166,301 @@ function Ground() {
   );
 }
 
-// ─── Shelter tile ──────────────────────────────────────────────────────────────
+// ─── GLB model loader with dark recolor ───────────────────────────────────────
 
-function ShelterTile({ name }: { name: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
+function GLBModel({
+  url,
+  scale = 1,
+  emissive = "#000000",
+  emissiveIntensity = 0,
+  position,
+  rotation,
+}: {
+  url: string;
+  scale?: number | [number, number, number];
+  emissive?: string;
+  emissiveIntensity?: number;
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+}) {
+  const { scene } = useGLTF(url);
+  const cloned = useMemo(() => {
+    const c = scene.clone(true);
+    const emissiveColor = new THREE.Color(emissive);
+    c.traverse((node) => {
+      if ((node as THREE.Mesh).isMesh) {
+        const mesh = node as THREE.Mesh;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        const mat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color("#1a1e24"),
+          roughness: 0.85,
+          metalness: 0.12,
+          emissive: emissiveColor,
+          emissiveIntensity,
+        });
+        mesh.material = mat;
+      }
+    });
+    return c;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, emissive, emissiveIntensity]);
 
-  useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.12;
+  return (
+    <primitive
+      object={cloned}
+      scale={scale}
+      position={position}
+      rotation={rotation}
+    />
+  );
+}
+
+// ─── Shared materials ──────────────────────────────────────────────────────────
+
+const MAT = {
+  concrete: { color: "#1a1e24", roughness: 0.9, metalness: 0.05 },
+  stone:    { color: "#171c1f", roughness: 1.0, metalness: 0.0  },
+  metal:    { color: "#1c2430", roughness: 0.5, metalness: 0.6  },
+  wood:     { color: "#1a1208", roughness: 0.95, metalness: 0.0 },
+  plaster:  { color: "#1e1f1c", roughness: 0.85, metalness: 0.0 },
+} as const;
+
+// ─── Colony — central fortified settlement ─────────────────────────────────────
+
+function ColonyBuilding({ name }: { name: string }) {
+  const flagRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (flagRef.current) {
+      flagRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 1.2) * 0.3;
     }
   });
 
   return (
-    <group position={[0, 0, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <ringGeometry args={[1.3, 1.55, 48]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.15} />
+    <group>
+      {/* Warm interior glow */}
+      <pointLight position={[0, 0.8, 0]} intensity={1.4} color="#f59e0b" distance={5} decay={2} />
+      <pointLight position={[1.2, 1.8, -1.2]} intensity={0.4} color="#fbbf24" distance={3} decay={2} />
+
+      {/* Base platform */}
+      <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4.0, 4.0]} />
+        <meshStandardMaterial {...MAT.concrete} />
       </mesh>
-      <mesh
-        ref={meshRef}
-        position={[0, 0.22, 0]}
-        castShadow
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-      >
-        <boxGeometry args={[2.2, 0.44, 2.2]} />
-        <meshStandardMaterial
-          color={hovered ? "#1e3a5f" : "#0f2240"}
-          roughness={0.5}
-          metalness={0.3}
-          emissive="#0ea5e9"
-          emissiveIntensity={hovered ? 0.3 : 0.12}
-        />
+
+      {/* Main building — GLB model */}
+      <GLBModel
+        url="/assets/models/building-type-a.glb"
+        scale={0.9}
+        emissive="#f59e0b"
+        emissiveIntensity={0.07}
+        position={[0, 0, -0.4]}
+      />
+
+      {/* Secondary building */}
+      <GLBModel
+        url="/assets/models/building-type-c.glb"
+        scale={0.55}
+        emissive="#f59e0b"
+        emissiveIntensity={0.05}
+        position={[-0.9, 0, 0.8]}
+        rotation={[0, Math.PI / 2, 0]}
+      />
+
+      {/* Fortified fences — perimeter */}
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.65} position={[-1.7, 0, -1.5]} rotation={[0, 0, 0]} />
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.65} position={[ 0.3, 0, -1.5]} rotation={[0, 0, 0]} />
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.65} position={[-1.7, 0,  0.5]} rotation={[0, Math.PI / 2, 0]} />
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.65} position={[ 1.7, 0, -0.5]} rotation={[0, Math.PI / 2, 0]} />
+
+      {/* Gate (south entrance) */}
+      <GLBModel url="/assets/models/fence-doorway.glb" scale={0.65} position={[0, 0, 1.7]} emissive="#fbbf24" emissiveIntensity={0.15} />
+
+      {/* Survival props */}
+      <GLBModel url="/assets/models/barrel.glb" scale={0.35} position={[1.2, 0, 0.8]} />
+      <GLBModel url="/assets/models/campfire-pit.glb" scale={0.4} position={[0.3, 0, 0.9]} emissive="#f97316" emissiveIntensity={0.4} />
+      <pointLight position={[0.3, 0.4, 0.9]} intensity={0.6} color="#f97316" distance={2} decay={2} />
+
+      {/* Corner watchtower (NE) */}
+      <mesh position={[1.7, 0.9, -1.7]} castShadow>
+        <cylinderGeometry args={[0.22, 0.25, 1.8, 8]} />
+        <meshStandardMaterial {...MAT.concrete} />
       </mesh>
-      <Html position={[0, 1.1, 0]} center distanceFactor={10} zIndexRange={[10, 0]}>
-        <div className="pointer-events-none select-none rounded-2xl border border-sky-300/30 bg-[rgba(8,16,28,0.92)] px-3 py-2 text-center shadow-xl shadow-black/60 backdrop-blur-sm">
-          <p className="text-[0.55rem] uppercase tracking-[0.3em] text-sky-300/70">Abrigo central</p>
-          <p className="mt-1 font-serif text-base text-stone-50 whitespace-nowrap">{name}</p>
+      <mesh position={[1.7, 1.92, -1.7]}>
+        <cylinderGeometry args={[0.35, 0.35, 0.12, 8]} />
+        <meshStandardMaterial {...MAT.metal} />
+      </mesh>
+
+      {/* Flagpole */}
+      <mesh position={[0, 2.8, -0.4]} castShadow>
+        <cylinderGeometry args={[0.025, 0.025, 1.0, 6]} />
+        <meshStandardMaterial {...MAT.metal} />
+      </mesh>
+      <mesh ref={flagRef} position={[0.2, 3.1, -0.4]}>
+        <boxGeometry args={[0.36, 0.2, 0.02]} />
+        <meshStandardMaterial color="#7f1d1d" roughness={0.8} emissive="#b91c1c" emissiveIntensity={0.2} />
+      </mesh>
+
+      {/* Label */}
+      <Html position={[0, 3.8, 0]} center distanceFactor={10} zIndexRange={[10, 0]}>
+        <div className="pointer-events-none select-none rounded-2xl border border-amber-400/25 bg-[rgba(8,12,18,0.92)] px-3 py-2 text-center shadow-xl shadow-black/60 backdrop-blur-sm">
+          <p className="text-[0.5rem] uppercase tracking-[0.3em] text-amber-400/60">Abrigo central</p>
+          <p className="mt-1 font-serif text-sm text-stone-50 whitespace-nowrap">{name}</p>
         </div>
       </Html>
+    </group>
+  );
+}
+
+// ─── Pharmacy ─────────────────────────────────────────────────────────────────
+
+function PharmacyBuilding({ emissive, emissiveIntensity }: { emissive: string; emissiveIntensity: number }) {
+  return (
+    <group>
+      <GLBModel
+        url="/assets/models/building-type-e.glb"
+        scale={0.7}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity * 0.8}
+      />
+      {/* Red cross — horizontal */}
+      <mesh position={[0, 1.4, 0.72]}>
+        <boxGeometry args={[0.45, 0.1, 0.025]} />
+        <meshStandardMaterial color="#7f1d1d" emissive="#dc2626" emissiveIntensity={0.5} />
+      </mesh>
+      {/* Red cross — vertical */}
+      <mesh position={[0, 1.4, 0.72]}>
+        <boxGeometry args={[0.1, 0.45, 0.025]} />
+        <meshStandardMaterial color="#7f1d1d" emissive="#dc2626" emissiveIntensity={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Watchtower ───────────────────────────────────────────────────────────────
+
+function WatchtowerBuilding({ emissive, emissiveIntensity }: { emissive: string; emissiveIntensity: number }) {
+  return (
+    <group>
+      {/* Survival structure as base */}
+      <GLBModel
+        url="/assets/models/structure-metal.glb"
+        scale={0.8}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity * 0.5}
+      />
+      {/* Tower body above */}
+      <mesh position={[0, 1.6, 0]} castShadow>
+        <cylinderGeometry args={[0.28, 0.32, 1.2, 8]} />
+        <meshStandardMaterial color="#141c22" roughness={0.7} metalness={0.4} emissive={emissive} emissiveIntensity={emissiveIntensity} />
+      </mesh>
+      {/* Observation deck */}
+      <mesh position={[0, 2.28, 0]} castShadow>
+        <cylinderGeometry args={[0.6, 0.3, 0.12, 8]} />
+        <meshStandardMaterial {...MAT.metal} />
+      </mesh>
+      {/* Spotlight */}
+      <mesh position={[0, 2.44, 0]}>
+        <cylinderGeometry args={[0.1, 0.07, 0.16, 8]} />
+        <meshStandardMaterial color="#1a2530" metalness={0.8} roughness={0.3} emissive="#fbbf24" emissiveIntensity={0.6} />
+      </mesh>
+      <pointLight position={[0, 2.6, 0]} intensity={0.6} color="#fbbf24" distance={5} decay={2} />
+    </group>
+  );
+}
+
+// ─── Chapel ───────────────────────────────────────────────────────────────────
+
+function ChapelBuilding({ emissive, emissiveIntensity }: { emissive: string; emissiveIntensity: number }) {
+  return (
+    <group>
+      <GLBModel
+        url="/assets/models/building-type-b.glb"
+        scale={0.75}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity * 0.7}
+      />
+      {/* Bell tower steeple */}
+      <mesh position={[0, 2.6, -0.5]} castShadow>
+        <cylinderGeometry args={[0, 0.22, 0.7, 4]} />
+        <meshStandardMaterial {...MAT.stone} />
+      </mesh>
+      {/* Cross — horizontal */}
+      <mesh position={[0, 3.05, -0.5]}>
+        <boxGeometry args={[0.28, 0.055, 0.055]} />
+        <meshStandardMaterial color="#0f1210" emissive={emissive} emissiveIntensity={emissiveIntensity * 2} />
+      </mesh>
+      {/* Cross — vertical */}
+      <mesh position={[0, 3.18, -0.5]}>
+        <boxGeometry args={[0.055, 0.28, 0.055]} />
+        <meshStandardMaterial color="#0f1210" emissive={emissive} emissiveIntensity={emissiveIntensity * 2} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Gate / North entrance ────────────────────────────────────────────────────
+
+function GateBuilding({ emissive, emissiveIntensity }: { emissive: string; emissiveIntensity: number }) {
+  return (
+    <group>
+      {/* Fortified fence sections */}
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.7} position={[-0.8, 0, 0]} emissive={emissive} emissiveIntensity={emissiveIntensity * 0.4} />
+      <GLBModel url="/assets/models/fence-fortified.glb" scale={0.7} position={[ 0.8, 0, 0]} emissive={emissive} emissiveIntensity={emissiveIntensity * 0.4} />
+      {/* Gate opening */}
+      <GLBModel url="/assets/models/fence-doorway.glb" scale={0.7} position={[0, 0, 0]} emissive={emissive} emissiveIntensity={emissiveIntensity * 0.6} />
+      {/* Gate lamps */}
+      <mesh position={[-0.6, 1.5, 0.18]}>
+        <boxGeometry args={[0.1, 0.1, 0.1]} />
+        <meshStandardMaterial emissive="#fbbf24" emissiveIntensity={0.8} color="#1a1a10" />
+      </mesh>
+      <pointLight position={[-0.6, 1.5, 0.3]} intensity={0.5} color="#fbbf24" distance={2.5} decay={2} />
+      <mesh position={[0.6, 1.5, 0.18]}>
+        <boxGeometry args={[0.1, 0.1, 0.1]} />
+        <meshStandardMaterial emissive="#fbbf24" emissiveIntensity={0.8} color="#1a1a10" />
+      </mesh>
+      <pointLight position={[0.6, 1.5, 0.3]} intensity={0.5} color="#fbbf24" distance={2.5} decay={2} />
+      {/* Sandbags */}
+      <mesh position={[0, 0.12, 0.4]} castShadow>
+        <boxGeometry args={[1.8, 0.22, 0.4]} />
+        <meshStandardMaterial color="#2a2318" roughness={1} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Location building selector ───────────────────────────────────────────────
+
+function LocationBuilding({ locationId, emissive, emissiveIntensity }: {
+  locationId: string;
+  emissive: string;
+  emissiveIntensity: number;
+}) {
+  switch (locationId) {
+    case "loc_farmacia_encosta":
+      return <PharmacyBuilding emissive={emissive} emissiveIntensity={emissiveIntensity} />;
+    case "loc_torre_observacao":
+      return <WatchtowerBuilding emissive={emissive} emissiveIntensity={emissiveIntensity} />;
+    case "loc_capela_velha":
+      return <ChapelBuilding emissive={emissive} emissiveIntensity={emissiveIntensity} />;
+    case "loc_porta_norte":
+      return <GateBuilding emissive={emissive} emissiveIntensity={emissiveIntensity} />;
+    default:
+      return (
+        <mesh position={[0, 0.4, 0]} castShadow>
+          <boxGeometry args={[1.2, 0.8, 1.2]} />
+          <meshStandardMaterial color="#141a20" roughness={0.85} emissive={emissive} emissiveIntensity={emissiveIntensity} />
+        </mesh>
+      );
+  }
+}
+
+// ─── Colony tile ───────────────────────────────────────────────────────────────
+
+function ShelterTile({ name }: { name: string }) {
+  return (
+    <group position={[0, 0, 0]}>
+      <ColonyBuilding name={name} />
     </group>
   );
 }
@@ -224,12 +479,14 @@ function LocationTile({
 
   const palette = statePalette[location.estado];
   const [hovered, setHovered] = useState(false);
+  const emissiveIntensity = hovered || highlighted ? 0.45 : 0.14;
 
   const routeFrom: [number, number, number] = [pos[0], 0.15, pos[2]];
   const routeTo: [number, number, number] = [0, 0.15, 0];
 
   return (
     <group position={pos}>
+      {/* Route line */}
       <Line
         points={[routeFrom, routeTo]}
         color={highlighted ? "#fbbf24" : "#2d3f55"}
@@ -238,28 +495,40 @@ function LocationTile({
         dashSize={0.3}
         gapSize={0.2}
       />
+
+      {/* Base platform */}
       <mesh
-        position={[0, 0.15, 0]}
-        castShadow
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0]}
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => setHovered(false)}
       >
-        <boxGeometry args={[1.6, 0.3, 1.6]} />
+        <planeGeometry args={[2.2, 2.2]} />
         <meshStandardMaterial
           color={palette.base}
-          roughness={0.6}
-          metalness={0.2}
+          roughness={0.9}
           emissive={palette.border}
-          emissiveIntensity={hovered || highlighted ? 0.4 : 0.14}
+          emissiveIntensity={emissiveIntensity * 0.3}
         />
       </mesh>
+
+      {/* Building */}
+      <LocationBuilding
+        locationId={location.id}
+        emissive={palette.border}
+        emissiveIntensity={emissiveIntensity}
+      />
+
+      {/* Highlight ring */}
       {highlighted && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.31, 0]}>
-          <ringGeometry args={[0.85, 1.05, 32]} />
-          <meshBasicMaterial color="#fbbf24" transparent opacity={0.55} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+          <ringGeometry args={[1.0, 1.2, 32]} />
+          <meshBasicMaterial color="#fbbf24" transparent opacity={0.5} />
         </mesh>
       )}
-      <Html position={[0, 1.0, 0]} center distanceFactor={10} zIndexRange={[5, 0]}>
+
+      {/* Label */}
+      <Html position={[0, 3.4, 0]} center distanceFactor={10} zIndexRange={[5, 0]}>
         <div
           className={`pointer-events-none select-none rounded-xl border px-3 py-2 text-center shadow-lg shadow-black/60 backdrop-blur-sm ${
             highlighted
@@ -480,3 +749,17 @@ export function BoardView3D({
     </section>
   );
 }
+
+// Preload all GLB models
+const GLB_MODELS = [
+  "/assets/models/building-type-a.glb",
+  "/assets/models/building-type-b.glb",
+  "/assets/models/building-type-c.glb",
+  "/assets/models/building-type-e.glb",
+  "/assets/models/fence-fortified.glb",
+  "/assets/models/fence-doorway.glb",
+  "/assets/models/structure-metal.glb",
+  "/assets/models/barrel.glb",
+  "/assets/models/campfire-pit.glb",
+];
+GLB_MODELS.forEach((url) => useGLTF.preload(url));
