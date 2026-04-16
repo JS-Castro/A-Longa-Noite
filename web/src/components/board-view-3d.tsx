@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html, Line, useGLTF } from "@react-three/drei";
-import { useRef, useState, useMemo, Suspense } from "react";
+import { useRef, useState, useMemo, useEffect, Suspense } from "react";
 import * as THREE from "three";
 import type { LocationDefinition, SurvivorSummary, ItemCardData } from "@/lib/game-data";
 
@@ -30,19 +30,21 @@ const statePalette = {
 
 // ─── Snow particles ────────────────────────────────────────────────────────────
 
-function Snow() {
-  const count = 400;
-  const mesh = useRef<THREE.Points>(null);
+const SNOW_COUNT = 400;
+const SNOW_POSITIONS = (() => {
+  const arr = new Float32Array(SNOW_COUNT * 3);
+  for (let i = 0; i < SNOW_COUNT; i++) {
+    arr[i * 3]     = (Math.random() - 0.5) * 30;
+    arr[i * 3 + 1] = Math.random() * 14;
+    arr[i * 3 + 2] = (Math.random() - 0.5) * 30;
+  }
+  return arr;
+})();
 
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 30;
-      arr[i * 3 + 1] = Math.random() * 14;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 30;
-    }
-    return arr;
-  }, []);
+function Snow() {
+  const count = SNOW_COUNT;
+  const mesh = useRef<THREE.Points>(null);
+  const positions = useMemo(() => SNOW_POSITIONS.slice(), []);
 
   useFrame((_, delta) => {
     if (!mesh.current) return;
@@ -203,7 +205,6 @@ function GLBModel({
       }
     });
     return c;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, emissive, emissiveIntensity]);
 
   return (
@@ -474,11 +475,11 @@ function LocationTile({
   location: LocationDefinition;
   highlighted: boolean;
 }) {
-  const pos = locationPositions3D[location.id];
-  if (!pos) return null;
-
-  const palette = statePalette[location.estado];
   const [hovered, setHovered] = useState(false);
+  const pos = locationPositions3D[location.id];
+  const palette = statePalette[location.estado];
+
+  if (!pos) return null;
   const emissiveIntensity = hovered || highlighted ? 0.45 : 0.14;
 
   const routeFrom: [number, number, number] = [pos[0], 0.15, pos[2]];
@@ -571,12 +572,10 @@ function SurvivorToken({ survivor, index }: { survivor: SurvivorSummary; index: 
 
 function CameraSetup() {
   const { camera } = useThree();
-  const done = useRef(false);
-  if (!done.current) {
+  useEffect(() => {
     camera.position.set(0, 10, 12);
     camera.lookAt(0, 0, 0);
-    done.current = true;
-  }
+  }, [camera]);
   return null;
 }
 
@@ -704,9 +703,6 @@ export function BoardView3D({
   highlightedLocationIds = [],
   playerItems = [],
   playerName = "Jogador",
-  isActionPhase: _isActionPhase,
-  selectableLocationIds: _selectableLocationIds,
-  onLocationSelect: _onLocationSelect,
 }: BoardView3DProps) {
   return (
     <section className="overflow-hidden rounded-[2rem] border border-white/10 shadow-xl shadow-black/30" style={{ background: "linear-gradient(180deg,#080c14,#04070c)" }}>
