@@ -58,11 +58,15 @@ Sprint atual: definicao do projeto e preparacao da base documental
 
 ### Tabuleiro 3D Interativo
 
-- [ ] tabuleiro 3D com perspectiva isometrica (Three.js ou CSS 3D)
-- [ ] controlos de camara: zoom (scroll), pan (drag fundo), rotacao de perspectiva
+- [x] tabuleiro 3D com perspectiva isometrica (Three.js / React Three Fiber)
+- [x] controlos de camara: zoom (scroll), pan, rotacao de perspectiva (OrbitControls)
+- [x] fundo atmosferico: neve a cair, pinheiros na encosta, nevoa noturna, ceu negro
+- [x] zona de jogador abaixo do tabuleiro com cartas de mao
+- [x] assets reais low-poly (Kenney CC0): edificios, vedacoes, props de sobrevivencia
+- [x] colonia central com edificios reais, vedacao fortified, fogueira, torre de guarda
+- [x] cada local tem edificio proprio: farmacia, torre observacao, capela, portao
 - [ ] drag and drop de cartas dentro do espaco 3D com snap para zonas validas
-- [ ] fundo atmosferico tematico: neve, nevoa noturna, silhuetas de pinheiros na encosta, ceu negro de inverno
-- [ ] zona de jogador visivel à volta do tabuleiro com cartas de mao e recursos
+- [ ] afinar escala e iluminacao dos edificios GLB no browser
 
 ### Multiplayer (fase futura)
 
